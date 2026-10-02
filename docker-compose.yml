@@ -1,0 +1,52 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: boticario-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-boticario}
+      POSTGRES_USER: ${DB_USER:-boticario}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-boticario}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - boticario_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-boticario}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+    container_name: boticario-backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DB_URL: jdbc:postgresql://db:5432/${DB_NAME:-boticario}
+      DB_USER: ${DB_USER:-boticario}
+      DB_PASSWORD: ${DB_PASSWORD:-boticario}
+      JWT_SECRET: ${JWT_SECRET:-change-this-development-only-secret-key-please-min-32-chars}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:4200}
+      SEED_ADMIN_USERNAME: ${SEED_ADMIN_USERNAME:-admin}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-Admin123!}
+      SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-admin@boticario.local}
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: boticario-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_PORT:-4200}:80"
+
+volumes:
+  boticario_db_data:

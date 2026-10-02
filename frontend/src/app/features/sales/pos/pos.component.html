@@ -1,0 +1,220 @@
+<div class="pos-page">
+
+  <ng-container *ngIf="!lastSale(); else receiptTemplate">
+
+    <div class="pos-header">
+      <h2>Punto de venta</h2>
+      <button pButton type="button" label="Historial de ventas" icon="pi pi-history"
+              class="p-button-text" (click)="goToHistory()"></button>
+    </div>
+
+    <p-message *ngIf="scanError" severity="error" [text]="scanError" styleClass="w-full mb-3"></p-message>
+    <p-message *ngIf="checkoutError" severity="error" [text]="checkoutError" styleClass="w-full mb-3"></p-message>
+    <p-message *ngIf="hasPrescriptionItems" severity="warn"
+                text="El carrito contiene productos que requieren receta medica. Verifica la receta antes de cobrar."
+                styleClass="w-full mb-3"></p-message>
+
+    <div class="pos-grid">
+
+      <div class="pos-column">
+
+        <p-card header="Escanear codigo de barras">
+          <div class="p-inputgroup">
+            <input #barcodeInput pInputText type="text" placeholder="Codigo de barras"
+                   [(ngModel)]="barcodeCode" (keyup.enter)="addByBarcode()" autofocus />
+            <button pButton type="button" icon="pi pi-plus" (click)="addByBarcode()"></button>
+          </div>
+        </p-card>
+
+        <p-card header="Buscar producto" styleClass="mt-3">
+          <input pInputText type="text" placeholder="Nombre o codigo interno" class="w-full"
+                 [(ngModel)]="productQuery" (ngModelChange)="onProductQueryChange()" />
+
+          <ul class="search-results" *ngIf="productResults.length > 0">
+            <li *ngFor="let product of productResults" (click)="selectProduct(product)">
+              <strong>{{ product.name }}</strong>
+              <span class="muted"> - {{ product.internalCode }}</span>
+              <p-tag *ngIf="product.requiresPrescription" value="Receta" severity="warn" styleClass="ml-2"></p-tag>
+            </li>
+          </ul>
+
+          <div class="presentation-picker" *ngIf="presentations.length > 0">
+            <label>Presentacion</label>
+            <p-dropdown [options]="presentations" optionLabel="unitCode" optionValue="id"
+                        [(ngModel)]="draftPresentationId" placeholder="Selecciona presentacion"
+                        styleClass="w-full"></p-dropdown>
+
+            <ng-container *ngIf="selectedPresentation as pres">
+              <div class="presentation-info">
+                Precio: {{ pres.salePrice | number:'1.2-2' }} por {{ pres.unitCode }}
+                (equivale a {{ pres.conversionFactor }} unidad base)
+              </div>
+            </ng-container>
+
+            <label>Cantidad</label>
+            <p-inputNumber [(ngModel)]="draftQuantity" [min]="1" [showButtons]="true"
+                            styleClass="w-full"></p-inputNumber>
+
+            <button pButton type="button" label="Agregar al carrito" icon="pi pi-cart-plus"
+                    class="mt-2 w-full" [disabled]="!draftPresentationId"
+                    (click)="addSelectedPresentation()"></button>
+          </div>
+        </p-card>
+
+        <p-card header="Cliente (opcional)" styleClass="mt-3">
+          <ng-container *ngIf="!selectedCustomer; else customerSelected">
+            <input pInputText type="text" placeholder="Buscar cliente por nombre o documento..." class="w-full"
+                   [(ngModel)]="customerQuery" (ngModelChange)="onCustomerQueryChange()" />
+
+            <ul class="search-results" *ngIf="customerResults.length > 0">
+              <li *ngFor="let customer of customerResults" (click)="selectCustomer(customer)">
+                <strong>{{ customer.name }}</strong>
+                <span class="muted" *ngIf="customer.documentNumber"> - {{ customer.documentNumber }}</span>
+              </li>
+            </ul>
+
+            <div class="mt-2">
+              <label class="muted">O escribe un nombre libre (venta de mostrador, sin registrar cliente):</label>
+              <input pInputText type="text" placeholder="Nombre del cliente" class="w-full mt-1"
+                     [(ngModel)]="customerName" />
+            </div>
+          </ng-container>
+          <ng-template #customerSelected>
+            <div class="selected-customer" *ngIf="selectedCustomer as customer">
+              <div>
+                <strong>{{ customer.name }}</strong>
+                <span class="muted" *ngIf="customer.documentNumber"> - {{ customer.documentNumber }}</span>
+              </div>
+              <button pButton type="button" icon="pi pi-times" class="p-button-text" (click)="clearCustomer()"></button>
+            </div>
+          </ng-template>
+        </p-card>
+
+      </div>
+
+      <div class="pos-column pos-column-wide">
+
+        <p-card header="Carrito">
+          <p-table [value]="cart" *ngIf="cart.length > 0; else emptyCart">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>Producto</th>
+                <th>Presentacion</th>
+                <th>Cantidad</th>
+                <th>Precio unit.</th>
+                <th>Desc. %</th>
+                <th>Total</th>
+                <th></th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-line let-i="rowIndex">
+              <tr>
+                <td>
+                  {{ line.productName }}
+                  <p-tag *ngIf="line.requiresPrescription" value="Receta" severity="warn" styleClass="ml-2"></p-tag>
+                </td>
+                <td>{{ line.unitCode }}</td>
+                <td>
+                  <p-inputNumber [(ngModel)]="line.quantityPresentation" [min]="1"
+                                  styleClass="qty-input"></p-inputNumber>
+                </td>
+                <td>{{ line.unitPrice | number:'1.2-2' }}</td>
+                <td>
+                  <p-inputNumber [(ngModel)]="line.discountPercentage" [min]="0" [max]="100"
+                                  [disabled]="!canApplyDiscount" styleClass="qty-input"></p-inputNumber>
+                </td>
+                <td>{{ lineTotal(line) | number:'1.2-2' }}</td>
+                <td>
+                  <button pButton type="button" icon="pi pi-trash" class="p-button-text p-button-danger"
+                          (click)="removeLine(i)"></button>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+          <ng-template #emptyCart>
+            <p class="muted">El carrito esta vacio. Escanea o busca un producto para comenzar.</p>
+          </ng-template>
+        </p-card>
+
+        <p-card header="Pagos" styleClass="mt-3">
+          <div class="payment-row" *ngFor="let payment of payments; let i = index">
+            <p-dropdown [options]="paymentMethodOptions" optionLabel="label" optionValue="value"
+                        [(ngModel)]="payment.paymentMethod" styleClass="payment-method"></p-dropdown>
+            <p-inputNumber [(ngModel)]="payment.amount" [min]="0" mode="decimal" [minFractionDigits]="2"
+                            styleClass="payment-amount"></p-inputNumber>
+            <button pButton type="button" label="Llenar restante" class="p-button-text"
+                    (click)="fillRemaining(i)"></button>
+            <button pButton type="button" icon="pi pi-times" class="p-button-text p-button-danger"
+                    [disabled]="payments.length <= 1" (click)="removePayment(i)"></button>
+          </div>
+          <button pButton type="button" label="Agregar forma de pago" icon="pi pi-plus"
+                  class="p-button-text mt-2" (click)="addPayment()"></button>
+        </p-card>
+
+        <p-card header="Resumen" styleClass="mt-3">
+          <div class="totals-row"><span>Subtotal</span><span>{{ subtotal | number:'1.2-2' }}</span></div>
+          <div class="totals-row"><span>Descuento</span><span>{{ discountTotal | number:'1.2-2' }}</span></div>
+          <div class="totals-row totals-strong"><span>Total</span><span>{{ total | number:'1.2-2' }}</span></div>
+          <div class="totals-row"><span>Pagado</span><span>{{ totalPaid | number:'1.2-2' }}</span></div>
+          <div class="totals-row" [class.totals-negative]="balance < 0">
+            <span>{{ balance >= 0 ? 'Vuelto' : 'Falta' }}</span>
+            <span>{{ (balance >= 0 ? balance : -balance) | number:'1.2-2' }}</span>
+          </div>
+
+          <button pButton type="button" label="Cobrar venta" icon="pi pi-check" class="w-full mt-3"
+                  [disabled]="!canCheckout || checkingOut()" [loading]="checkingOut()"
+                  (click)="checkout()"></button>
+        </p-card>
+
+      </div>
+
+    </div>
+
+  </ng-container>
+
+  <ng-template #receiptTemplate>
+    <div class="receipt" *ngIf="lastSale() as sale">
+      <p-card header="Venta registrada">
+        <p><strong>Codigo:</strong> {{ sale.saleCode }}</p>
+        <p *ngIf="sale.customerName"><strong>Cliente:</strong> {{ sale.customerName }}</p>
+
+        <p-message *ngIf="sale.hasPrescriptionItems" severity="warn"
+                    text="Esta venta incluye productos con receta." styleClass="w-full mb-3"></p-message>
+
+        <table class="receipt-table">
+          <thead>
+            <tr><th>Producto</th><th>Cant.</th><th>P. unit.</th><th>Desc. %</th><th>Total</th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of sale.items">
+              <td>{{ item.productName }}</td>
+              <td>{{ item.quantityPresentation }} {{ item.unitCode }}</td>
+              <td>{{ item.unitPrice | number:'1.2-2' }}</td>
+              <td>{{ item.discountPercentage }}</td>
+              <td>{{ item.lineTotal | number:'1.2-2' }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="totals-row"><span>Subtotal</span><span>{{ sale.subtotal | number:'1.2-2' }}</span></div>
+        <div class="totals-row"><span>Descuento</span><span>{{ sale.discountTotal | number:'1.2-2' }}</span></div>
+        <div class="totals-row totals-strong"><span>Total</span><span>{{ sale.total | number:'1.2-2' }}</span></div>
+        <div class="totals-row"><span>Vuelto</span><span>{{ sale.changeAmount | number:'1.2-2' }}</span></div>
+
+        <h4>Pagos</h4>
+        <div class="totals-row" *ngFor="let payment of sale.payments">
+          <span>{{ payment.paymentMethod }}</span><span>{{ payment.amount | number:'1.2-2' }}</span>
+        </div>
+
+        <div class="receipt-actions">
+          <button pButton type="button" label="Imprimir ticket" icon="pi pi-print" (click)="print()"></button>
+          <button pButton type="button" label="Nueva venta" icon="pi pi-plus" class="p-button-text" (click)="newSale()"></button>
+          <button pButton type="button" label="Ver historial" class="p-button-text" (click)="goToHistory()"></button>
+        </div>
+      </p-card>
+
+      <app-sale-ticket [sale]="sale"></app-sale-ticket>
+    </div>
+  </ng-template>
+
+</div>

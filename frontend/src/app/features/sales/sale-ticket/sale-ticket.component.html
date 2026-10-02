@@ -1,0 +1,49 @@
+<div class="print-ticket" *ngIf="sale">
+  <div class="ticket-header">
+    <div class="ticket-pharmacy">{{ pharmacyName }}</div>
+    <div *ngIf="nit" class="ticket-nit">NIT: {{ nit }}</div>
+    <div *ngIf="address" class="ticket-address">{{ address }}</div>
+    <div>Ticket de venta</div>
+    <div>{{ sale.saleCode }}</div>
+    <div>{{ sale.createdAt | date: 'dd/MM/yyyy HH:mm' }}</div>
+    <div *ngIf="sale.customerName">Cliente: {{ sale.customerName }}</div>
+    <div *ngIf="sale.status === 'ANULADA'" class="ticket-void">** VENTA ANULADA **</div>
+  </div>
+
+  <div class="ticket-divider"></div>
+
+  <div class="ticket-item" *ngFor="let item of sale.items">
+    <div class="ticket-item-name">{{ item.productName }}</div>
+    <div class="ticket-item-line">
+      <span>{{ item.quantityPresentation }} {{ item.unitCode }} x {{ item.unitPrice | number: '1.2-2' }}</span>
+      <span>{{ item.lineTotal | number: '1.2-2' }}</span>
+    </div>
+    <div class="ticket-item-discount" *ngIf="item.discountPercentage">
+      Descuento {{ item.discountPercentage }}%
+    </div>
+  </div>
+
+  <div class="ticket-divider"></div>
+
+  <div class="ticket-row"><span>Subtotal</span><span>{{ sale.subtotal | number: '1.2-2' }}</span></div>
+  <div class="ticket-row" *ngIf="sale.discountTotal">
+    <span>Descuento</span><span>-{{ sale.discountTotal | number: '1.2-2' }}</span>
+  </div>
+  <div class="ticket-row ticket-total"><span>TOTAL</span><span>{{ sale.total | number: '1.2-2' }}</span></div>
+
+  <div class="ticket-divider"></div>
+
+  <div class="ticket-row" *ngFor="let payment of sale.payments">
+    <span>{{ paymentLabel(payment.paymentMethod) }}</span><span>{{ payment.amount | number: '1.2-2' }}</span>
+  </div>
+  <div class="ticket-row" *ngIf="sale.changeAmount">
+    <span>Vuelto</span><span>{{ sale.changeAmount | number: '1.2-2' }}</span>
+  </div>
+
+  <div class="ticket-divider"></div>
+
+  <div class="ticket-footer">
+    <div>Gracias por su compra</div>
+    <div *ngIf="sale.hasPrescriptionItems">Venta con producto(s) bajo receta medica</div>
+  </div>
+</div>

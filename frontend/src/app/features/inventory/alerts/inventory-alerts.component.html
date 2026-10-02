@@ -1,0 +1,84 @@
+<div class="page-header">
+  <h2>Alertas de inventario</h2>
+  <p-button label="Actualizar" icon="pi pi-refresh" severity="secondary" [text]="true" (onClick)="reload()" />
+</div>
+
+<p-tabView>
+  <p-tabPanel header="Stock bajo ({{ lowStock.length }})">
+    <p-table [value]="lowStock" [loading]="loading" responsiveLayout="scroll">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Código</th>
+          <th>Producto</th>
+          <th>Stock actual</th>
+          <th>Mínimo</th>
+          <th></th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-stock>
+        <tr class="clickable-row" (click)="goToProduct(stock.productId)">
+          <td>{{ stock.internalCode }}</td>
+          <td>{{ stock.productName }}</td>
+          <td>{{ stock.quantityBase }} {{ stock.baseUnitCode }}</td>
+          <td>{{ stock.minStockBase }} {{ stock.baseUnitCode }}</td>
+          <td><p-tag value="Bajo mínimo" severity="danger" /></td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr><td colspan="5">Ningún producto está por debajo de su stock mínimo.</td></tr>
+      </ng-template>
+    </p-table>
+  </p-tabPanel>
+
+  <p-tabPanel header="Por vencer ({{ expiringSoon.length }})">
+    <p-table [value]="expiringSoon" [loading]="loading" responsiveLayout="scroll">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Producto</th>
+          <th>Lote</th>
+          <th>Vence</th>
+          <th>Cantidad</th>
+          <th></th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-lot>
+        <tr class="clickable-row" (click)="goToProduct(lot.productId)">
+          <td>{{ lot.productName }}</td>
+          <td>{{ lot.lotCode }}</td>
+          <td>{{ lot.expirationDate | date: 'mediumDate' }}</td>
+          <td>{{ lot.quantityBase }}</td>
+          <td><p-tag value="Por vencer" severity="warn" /></td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr><td colspan="5">No hay lotes próximos a vencer dentro de la ventana configurada.</td></tr>
+      </ng-template>
+    </p-table>
+  </p-tabPanel>
+
+  <p-tabPanel header="Vencidos ({{ expired.length }})">
+    <p-table [value]="expired" [loading]="loading" responsiveLayout="scroll">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Producto</th>
+          <th>Lote</th>
+          <th>Venció</th>
+          <th>Cantidad</th>
+          <th></th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-lot>
+        <tr class="clickable-row" (click)="goToProduct(lot.productId)">
+          <td>{{ lot.productName }}</td>
+          <td>{{ lot.lotCode }}</td>
+          <td>{{ lot.expirationDate | date: 'mediumDate' }}</td>
+          <td>{{ lot.quantityBase }}</td>
+          <td><p-tag value="Vencido" severity="danger" /></td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr><td colspan="5">No hay lotes vencidos.</td></tr>
+      </ng-template>
+    </p-table>
+  </p-tabPanel>
+</p-tabView>

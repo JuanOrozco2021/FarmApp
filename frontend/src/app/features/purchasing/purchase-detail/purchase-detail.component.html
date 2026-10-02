@@ -1,0 +1,87 @@
+<ng-container *ngIf="purchase() as p">
+  <div class="page-header">
+    <div>
+      <h2>{{ p.purchaseCode }}</h2>
+      <span class="hint">{{ p.supplierName }} · {{ p.purchaseDate | date: 'mediumDate' }}</span>
+    </div>
+    <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+      <p-tag [value]="p.status" [severity]="statusSeverity(p.status)" />
+      <ng-container *ngIf="p.status === 'BORRADOR' && authService.hasPermission('PURCHASE_MANAGE')">
+        <p-button label="Editar" severity="secondary" [text]="true" (onClick)="edit()" />
+        <p-button label="Recibir" icon="pi pi-check" [loading]="processing()" (onClick)="receive()" />
+        <p-button label="Anular" severity="danger" [text]="true" [loading]="processing()" (onClick)="cancel()" />
+      </ng-container>
+      <p-button label="Volver" severity="secondary" [text]="true" (onClick)="goBack()" />
+    </div>
+  </div>
+
+  <p-message *ngIf="errorMessage()" severity="error" [text]="errorMessage()!" styleClass="w-full" [style]="{ display: 'block', 'margin-bottom': '1rem' }" />
+
+  <p-card header="Datos generales">
+    <div class="form-grid">
+      <div><strong>Proveedor:</strong> {{ p.supplierName }}</div>
+      <div><strong>Factura:</strong> {{ p.invoiceNumber || '—' }}</div>
+      <div><strong>Total:</strong> ${{ p.totalAmount }}</div>
+      <div><strong>Recibida:</strong> {{ p.receivedAt ? (p.receivedAt | date: 'short') : '—' }}</div>
+    </div>
+    <p *ngIf="p.notes">{{ p.notes }}</p>
+  </p-card>
+
+  <h3 style="margin-top:1.5rem">Items</h3>
+  <p-table [value]="p.items" dataKey="id" responsiveLayout="scroll">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Producto</th>
+        <th>Cantidad</th>
+        <th>Unidad base</th>
+        <th>Costo unitario</th>
+        <th>Subtotal</th>
+        <th>Lote</th>
+        <th>Vence</th>
+        <th>Devuelto</th>
+        <th></th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-item>
+      <tr>
+        <td>{{ item.productName }}</td>
+        <td>{{ item.quantityPresentation }} {{ item.unitCode }}</td>
+        <td>{{ item.quantityBase }}</td>
+        <td>${{ item.unitCost }}</td>
+        <td>${{ item.lineTotal }}</td>
+        <td>{{ item.lotCode || '—' }}</td>
+        <td>{{ item.expirationDate || '—' }}</td>
+        <td>{{ item.returnedQuantityBase }}</td>
+        <td>
+          <p-button label="Devolver" [text]="true" severity="danger"
+                    *ngIf="p.status === 'RECIBIDA' && availableToReturn(item) > 0 && authService.hasPermission('PURCHASE_MANAGE')"
+                    (onClick)="openReturnDialog(item)" />
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr><td colspan="9">Esta compra no tiene items.</td></tr>
+    </ng-template>
+  </p-table>
+</ng-container>
+
+<p-dialog header="Devolver a proveedor" [(visible)]="showReturnDialog" [modal]="true" [style]="{ width: '26rem' }">
+  <form [formGroup]="returnForm" (ngSubmit)="submitReturn()" *ngIf="selectedItem as item">
+    <p class="hint">
+      {{ item.productName }} · disponible para devolver: {{ availableToReturn(item) }}
+    </p>
+    <div class="form-field">
+      <label for="returnQty">Cantidad a devolver (unidad base)</label>
+      <p-inputNumber inputId="returnQty" formControlName="quantityBase" [min]="0.000001" [max]="availableToReturn(item)" />
+    </div>
+    <div class="form-field" style="margin-top:0.75rem">
+      <label for="returnReason">Motivo</label>
+      <input id="returnReason" pInputText formControlName="reason" placeholder="Ej: unidades danadas en transporte" />
+    </div>
+    <p-message *ngIf="returnErrorMessage()" severity="error" [text]="returnErrorMessage()!" styleClass="w-full" [style]="{ display: 'block', 'margin-top': '0.75rem' }" />
+    <div class="form-actions">
+      <p-button type="submit" label="Confirmar devolucion" [loading]="savingReturn()" />
+      <p-button type="button" label="Cancelar" severity="secondary" [text]="true" (onClick)="showReturnDialog = false" />
+    </div>
+  </form>
+</p-dialog>

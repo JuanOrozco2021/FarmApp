@@ -1,0 +1,139 @@
+<ng-container *ngIf="stock() as s">
+  <div class="page-header">
+    <div>
+      <h2>{{ s.productName }}</h2>
+      <span class="hint">{{ s.internalCode }} · Inventario</span>
+    </div>
+    <div style="display:flex; gap:0.5rem;">
+      <p-button label="Ver producto" severity="secondary" [text]="true" (onClick)="goToProduct()" />
+      <p-button label="Ajustar inventario" icon="pi pi-sliders-h" (onClick)="openAdjustmentDialog()"
+                *ngIf="authService.hasPermission('INVENTORY_ADJUST')" />
+    </div>
+  </div>
+
+  <p-card header="Existencias">
+    <div class="form-grid">
+      <div>
+        <strong>Stock actual:</strong>
+        {{ s.quantityBase }} {{ s.baseUnitCode }}
+        <p-tag *ngIf="s.lowStock" value="Bajo mínimo" severity="danger" [style]="{ 'margin-left': '0.5rem' }" />
+      </div>
+      <div><strong>Stock mínimo:</strong> {{ s.minStockBase }} {{ s.baseUnitCode }}</div>
+      <div><strong>Stock máximo:</strong> {{ s.maxStockBase || '—' }} {{ s.baseUnitCode }}</div>
+    </div>
+  </p-card>
+
+  <p-card header="Lotes activos" [style]="{ 'margin-top': '1.5rem' }">
+    <p-table [value]="lots" dataKey="id" responsiveLayout="scroll">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Lote</th>
+          <th>Vence</th>
+          <th>Cantidad</th>
+          <th></th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-lot>
+        <tr>
+          <td>{{ lot.lotCode }}</td>
+          <td>{{ lot.expirationDate ? (lot.expirationDate | date: 'mediumDate') : '—' }}</td>
+          <td>{{ lot.quantityBase }}</td>
+          <td>
+            <p-tag *ngIf="lot.expired" value="Vencido" severity="danger" />
+            <p-tag *ngIf="!lot.expired && lot.expiringSoon" value="Por vencer" severity="warn" />
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr><td colspan="4">Este producto no tiene lotes con existencia activa.</td></tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+
+  <h3 style="margin-top:1.5rem">Kardex (movimientos)</h3>
+  <p-table
+    [value]="movements"
+    [lazy]="true"
+    (onLazyLoad)="loadKardex($event)"
+    [paginator]="true"
+    [rows]="10"
+    [totalRecords]="totalMovements"
+    [loading]="loadingKardex"
+    responsiveLayout="scroll">
+
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Fecha</th>
+        <th>Tipo</th>
+        <th>Lote</th>
+        <th>Cantidad</th>
+        <th>Saldo</th>
+        <th>Origen</th>
+        <th>Notas</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-movement>
+      <tr>
+        <td>{{ movement.occurredAt | date: 'short' }}</td>
+        <td>{{ movement.movementType }}</td>
+        <td>{{ movement.lotCode || '—' }}</td>
+        <td [style.color]="movement.quantityBase < 0 ? '#c0392b' : '#27ae60'">
+          {{ movement.quantityBase > 0 ? '+' : '' }}{{ movement.quantityBase }}
+        </td>
+        <td>{{ movement.balanceAfter }}</td>
+        <td>{{ movement.referenceType || '—' }}</td>
+        <td>{{ movement.notes || '—' }}</td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr><td colspan="7">Sin movimientos registrados todavía.</td></tr>
+    </ng-template>
+  </p-table>
+</ng-container>
+
+<p-dialog header="Ajustar inventario" [(visible)]="showAdjustmentDialog" [modal]="true" [style]="{ width: '30rem' }">
+  <form [formGroup]="adjustmentForm" (ngSubmit)="submitAdjustment()">
+    <div class="form-field">
+      <label for="adjType">Tipo de ajuste</label>
+      <p-dropdown inputId="adjType" [options]="adjustmentTypes" optionLabel="label" optionValue="value"
+                  formControlName="adjustmentType" />
+    </div>
+
+    <div class="form-field" style="margin-top:0.75rem">
+      <label for="qty">Cantidad (en {{ stock()?.baseUnitCode }})</label>
+      <p-inputNumber inputId="qty" formControlName="quantityBase" [min]="0.000001" [minFractionDigits]="0" [maxFractionDigits]="3" />
+    </div>
+
+    <ng-container *ngIf="isPositiveAdjustment; else negativeFields">
+      <div class="form-field" style="margin-top:0.75rem">
+        <label for="lotCode">Código de lote (opcional; nuevo o existente)</label>
+        <input id="lotCode" pInputText formControlName="lotCode" placeholder="Se usa GENERAL si el producto no controla lote" />
+      </div>
+      <div class="form-field" style="margin-top:0.75rem">
+        <label for="expDate">Fecha de vencimiento</label>
+        <p-calendar inputId="expDate" formControlName="expirationDate" dateFormat="yy-mm-dd" [showIcon]="true" />
+      </div>
+    </ng-container>
+
+    <ng-template #negativeFields>
+      <div class="form-field" style="margin-top:0.75rem">
+        <label for="lotId">Lote afectado</label>
+        <p-dropdown inputId="lotId" [options]="lots" optionLabel="lotCode" optionValue="id" formControlName="lotId"
+                    placeholder="Selecciona el lote" [filter]="true" />
+        <span class="hint">Obligatorio: un ajuste negativo, merma o vencimiento siempre debe indicar el lote exacto.</span>
+      </div>
+    </ng-template>
+
+    <div class="form-field" style="margin-top:0.75rem">
+      <label for="reason">Motivo</label>
+      <input id="reason" pInputText formControlName="reason" placeholder="Ej: conteo físico, unidades dañadas..." />
+    </div>
+
+    <div class="form-actions">
+      <p-button type="submit" label="Guardar ajuste" [loading]="savingAdjustment()" />
+      <p-button type="button" label="Cancelar" severity="secondary" [text]="true" (onClick)="showAdjustmentDialog = false" />
+    </div>
+  </form>
+</p-dialog>

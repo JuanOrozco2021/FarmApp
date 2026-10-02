@@ -1,0 +1,68 @@
+.print-ticket {
+  width: 72mm;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 11px;
+  line-height: 1.35;
+  color: #000;
+}
+
+.ticket-header {
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.ticket-pharmacy {
+  font-weight: bold;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.ticket-nit {
+  font-size: 11px;
+  margin-bottom: 1px;
+}
+
+.ticket-address {
+  font-size: 10px;
+  margin-bottom: 2px;
+}
+
+.ticket-void {
+  font-weight: bold;
+  margin-top: 4px;
+}
+
+.ticket-divider {
+  border-top: 1px dashed #000;
+  margin: 6px 0;
+}
+
+.ticket-item {
+  margin-bottom: 3px;
+}
+
+.ticket-item-name {
+  font-weight: bold;
+}
+
+.ticket-item-line,
+.ticket-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ticket-item-discount {
+  padding-left: 8px;
+  font-style: italic;
+}
+
+.ticket-total {
+  font-weight: bold;
+  font-size: 13px;
+}
+
+.ticket-footer {
+  text-align: center;
+  margin-top: 6px;
+}

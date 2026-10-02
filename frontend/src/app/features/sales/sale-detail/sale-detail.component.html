@@ -1,0 +1,97 @@
+<ng-container *ngIf="sale() as s">
+  <div class="page-header">
+    <div>
+      <h2>{{ s.saleCode }}</h2>
+      <span class="hint">
+        <a *ngIf="s.customerId; else anonCustomer" (click)="goToCustomer(s.customerId)" class="clickable-row">{{ s.customerName }}</a>
+        <ng-template #anonCustomer>{{ s.customerName || 'Cliente no registrado' }}</ng-template>
+        · {{ s.createdAt | date: 'medium' }}
+      </span>
+    </div>
+    <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+      <p-tag [value]="s.status" [severity]="statusSeverity(s.status)" />
+      <p-button label="Anular venta" severity="danger" [text]="true"
+                *ngIf="s.status === 'ACTIVA' && authService.hasPermission('SALE_CANCEL')"
+                (onClick)="openCancelDialog()" />
+      <p-button label="Imprimir" icon="pi pi-print" [text]="true" (onClick)="print()" />
+      <p-button label="Volver" severity="secondary" [text]="true" (onClick)="goBack()" />
+    </div>
+  </div>
+
+  <p-message *ngIf="s.hasPrescriptionItems" severity="warn"
+              text="Esta venta incluye productos que requieren receta medica." styleClass="w-full mb-3"></p-message>
+
+  <p-message *ngIf="s.status === 'ANULADA'" severity="error" styleClass="w-full mb-3"
+              [text]="'Venta anulada' + (s.cancelledAt ? (' el ' + (s.cancelledAt | date: 'medium')) : '') + (s.cancelledReason ? ('. Motivo: ' + s.cancelledReason) : '')">
+  </p-message>
+
+  <p-card header="Resumen">
+    <div class="form-grid">
+      <div><strong>Subtotal:</strong> ${{ s.subtotal }}</div>
+      <div><strong>Descuento:</strong> ${{ s.discountTotal }}</div>
+      <div><strong>Total:</strong> ${{ s.total }}</div>
+      <div><strong>Vuelto:</strong> ${{ s.changeAmount }}</div>
+    </div>
+  </p-card>
+
+  <h3 style="margin-top:1.5rem">Items</h3>
+  <p-table [value]="s.items" dataKey="id" responsiveLayout="scroll">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Producto</th>
+        <th>Cantidad</th>
+        <th>Precio unit.</th>
+        <th>Desc. %</th>
+        <th>Total</th>
+        <th>Lotes consumidos</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-item>
+      <tr>
+        <td>
+          {{ item.productName }}
+          <p-tag *ngIf="item.requiresPrescription" value="Receta" severity="warn" styleClass="ml-2"></p-tag>
+        </td>
+        <td>{{ item.quantityPresentation }} {{ item.unitCode }}</td>
+        <td>${{ item.unitPrice }}</td>
+        <td>{{ item.discountPercentage }}</td>
+        <td>${{ item.lineTotal }}</td>
+        <td>
+          <span *ngFor="let lot of item.lots" class="lot-chip">{{ lot.lotCode }} ({{ lot.quantityBase }})</span>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr><td colspan="6">Esta venta no tiene items.</td></tr>
+    </ng-template>
+  </p-table>
+
+  <h3 style="margin-top:1.5rem">Pagos</h3>
+  <p-table [value]="s.payments" responsiveLayout="scroll">
+    <ng-template pTemplate="header">
+      <tr><th>Forma de pago</th><th>Monto</th></tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-payment>
+      <tr><td>{{ payment.paymentMethod }}</td><td>${{ payment.amount }}</td></tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr><td colspan="2">Esta venta no tiene pagos registrados.</td></tr>
+    </ng-template>
+  </p-table>
+
+  <app-sale-ticket [sale]="s"></app-sale-ticket>
+</ng-container>
+
+<p-dialog header="Anular venta" [(visible)]="showCancelDialog" [modal]="true" [style]="{ width: '26rem' }">
+  <form [formGroup]="cancelForm" (ngSubmit)="submitCancel()">
+    <p-message *ngIf="cancelError" severity="error" [text]="cancelError" styleClass="w-full mb-3"></p-message>
+    <div class="form-field">
+      <label for="cancelReason">Motivo de la anulacion</label>
+      <input id="cancelReason" pInputText formControlName="reason" placeholder="Ej: cliente devolvio el producto" />
+    </div>
+    <div class="form-actions">
+      <p-button type="submit" label="Confirmar anulacion" severity="danger" [loading]="processing()" />
+      <p-button type="button" label="Cerrar" severity="secondary" [text]="true" (onClick)="showCancelDialog = false" />
+    </div>
+  </form>
+</p-dialog>

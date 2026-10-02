@@ -1,0 +1,83 @@
+<div class="page-header">
+  <h2>Clientes</h2>
+  <p-button label="Nuevo cliente" icon="pi pi-plus" (onClick)="openNew()"
+            *ngIf="authService.hasPermission('CUSTOMER_MANAGE')" />
+</div>
+
+<div class="filters">
+  <input pInputText type="text" placeholder="Buscar por nombre o documento..." [(ngModel)]="search" (ngModelChange)="onFilterChange()" />
+</div>
+
+<p-table
+  [value]="customers"
+  [lazy]="true"
+  (onLazyLoad)="load($event)"
+  [paginator]="true"
+  [rows]="15"
+  [totalRecords]="totalRecords"
+  [loading]="loading"
+  [rowHover]="true"
+  dataKey="id"
+  responsiveLayout="scroll">
+
+  <ng-template pTemplate="header">
+    <tr>
+      <th>Nombre</th>
+      <th>Documento</th>
+      <th>Telefono</th>
+      <th>Correo</th>
+      <th>Estado</th>
+    </tr>
+  </ng-template>
+
+  <ng-template pTemplate="body" let-customer>
+    <tr (click)="goToDetail(customer)" class="clickable-row">
+      <td>{{ customer.name }}</td>
+      <td>{{ customer.documentType ? (customer.documentType + ' ' + customer.documentNumber) : '—' }}</td>
+      <td>{{ customer.phone || '—' }}</td>
+      <td>{{ customer.email || '—' }}</td>
+      <td>
+        <p-tag [value]="customer.active ? 'Activo' : 'Inactivo'" [severity]="customer.active ? 'success' : 'danger'" />
+      </td>
+    </tr>
+  </ng-template>
+
+  <ng-template pTemplate="emptymessage">
+    <tr><td colspan="5">No se encontraron clientes.</td></tr>
+  </ng-template>
+</p-table>
+
+<p-dialog header="Nuevo cliente" [(visible)]="showDialog" [modal]="true" [style]="{ width: '28rem' }">
+  <form [formGroup]="customerForm" (ngSubmit)="submit()">
+    <p-message *ngIf="formError" severity="error" [text]="formError" styleClass="w-full mb-3"></p-message>
+    <div class="form-field">
+      <label for="name">Nombre</label>
+      <input id="name" pInputText formControlName="name" />
+    </div>
+    <div class="form-field" style="margin-top:0.75rem">
+      <label for="documentType">Tipo de documento (opcional)</label>
+      <p-dropdown inputId="documentType" [options]="documentTypeOptions" optionLabel="label" optionValue="value"
+                  formControlName="documentType" placeholder="Sin documento" [showClear]="true" />
+    </div>
+    <div class="form-field" style="margin-top:0.75rem">
+      <label for="documentNumber">Numero de documento (opcional)</label>
+      <input id="documentNumber" pInputText formControlName="documentNumber" />
+    </div>
+    <div class="form-field" style="margin-top:0.75rem">
+      <label for="phone">Telefono</label>
+      <input id="phone" pInputText formControlName="phone" />
+    </div>
+    <div class="form-field" style="margin-top:0.75rem">
+      <label for="email">Correo</label>
+      <input id="email" pInputText formControlName="email" />
+    </div>
+    <div class="form-field" style="margin-top:0.75rem">
+      <label for="address">Direccion</label>
+      <input id="address" pInputText formControlName="address" />
+    </div>
+    <div class="form-actions">
+      <p-button type="submit" label="Guardar" [loading]="saving()" />
+      <p-button type="button" label="Cancelar" severity="secondary" [text]="true" (onClick)="showDialog = false" />
+    </div>
+  </form>
+</p-dialog>

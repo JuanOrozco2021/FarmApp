@@ -1,0 +1,81 @@
+<div class="page-header">
+  <h2>Nuevo registro de inyectologia</h2>
+  <p-button label="Volver" severity="secondary" [text]="true" (onClick)="goBack()" />
+</div>
+
+<p-message *ngIf="formError" severity="error" [text]="formError" styleClass="w-full mb-3"></p-message>
+
+<p-card header="Paciente">
+  <ng-container *ngIf="!selectedCustomer; else customerSelected">
+    <input pInputText type="text" placeholder="Buscar cliente registrado por nombre o documento..." class="w-full"
+           [(ngModel)]="customerQuery" (ngModelChange)="onCustomerQueryChange()" />
+
+    <ul class="search-results" *ngIf="customerResults.length > 0">
+      <li *ngFor="let customer of customerResults" (click)="selectCustomer(customer)">
+        <strong>{{ customer.name }}</strong>
+        <span class="muted" *ngIf="customer.documentNumber"> - {{ customer.documentNumber }}</span>
+      </li>
+    </ul>
+
+    <div class="form-field mt-2">
+      <label for="patientName">O escribe el nombre del paciente (sin registrarlo como cliente)</label>
+      <input id="patientName" pInputText type="text" [(ngModel)]="patientName" />
+    </div>
+  </ng-container>
+  <ng-template #customerSelected>
+    <div class="selected-customer" *ngIf="selectedCustomer as customer">
+      <div>
+        <strong>{{ customer.name }}</strong>
+        <span class="muted" *ngIf="customer.documentNumber"> - {{ customer.documentNumber }}</span>
+      </div>
+      <button pButton type="button" icon="pi pi-times" class="p-button-text" (click)="clearCustomer()"></button>
+    </div>
+  </ng-template>
+</p-card>
+
+<p-card header="Servicio" styleClass="mt-3">
+  <div class="form-grid">
+    <div class="form-field" style="grid-column: span 2">
+      <label for="medicationName">Medicamento aplicado</label>
+      <input id="medicationName" pInputText [(ngModel)]="medicationName" placeholder="Nombre del medicamento que trae el paciente" />
+    </div>
+    <div class="form-field">
+      <label for="dose">Dosis (opcional)</label>
+      <input id="dose" pInputText [(ngModel)]="dose" placeholder="Ej: 1 ampolla" />
+    </div>
+    <div class="form-field">
+      <label for="applicationSite">Sitio de aplicacion (opcional)</label>
+      <input id="applicationSite" pInputText [(ngModel)]="applicationSite" placeholder="Ej: gluteo derecho" />
+    </div>
+    <div class="form-field">
+      <label for="lotCode">Lote del medicamento (opcional)</label>
+      <input id="lotCode" pInputText [(ngModel)]="lotCode" />
+    </div>
+    <div class="form-field">
+      <label for="relatedSaleId">Numero de venta relacionada (opcional)</label>
+      <p-inputNumber inputId="relatedSaleId" [(ngModel)]="relatedSaleId" [min]="1" [useGrouping]="false" />
+      <span class="hint">Si el medicamento se compro en esta farmacia en la misma atencion.</span>
+    </div>
+    <div class="form-field" style="grid-column: span 2">
+      <label for="observations">Observaciones (opcional)</label>
+      <input id="observations" pInputText [(ngModel)]="observations" placeholder="Reacciones, indicaciones, etc." />
+    </div>
+  </div>
+</p-card>
+
+<p-card header="Cobro" styleClass="mt-3">
+  <div class="form-grid">
+    <div class="form-field">
+      <label for="fee">Tarifa del servicio</label>
+      <p-inputNumber inputId="fee" [(ngModel)]="fee" mode="currency" currency="COP" locale="es-CO" [min]="0" />
+    </div>
+    <div class="form-field">
+      <label for="paymentMethod">Forma de pago</label>
+      <p-dropdown inputId="paymentMethod" [options]="paymentMethodOptions" optionLabel="label" optionValue="value"
+                  [(ngModel)]="paymentMethod" />
+    </div>
+  </div>
+  <div class="form-actions">
+    <p-button label="Registrar servicio" icon="pi pi-check" [disabled]="!canSubmit || saving" [loading]="saving" (onClick)="submit()" />
+  </div>
+</p-card>

@@ -1,0 +1,19 @@
+# Entorno / secretos (nunca se sube; cada instalacion crea el suyo a partir de .env.example)
+.env
+
+# Backend (Maven)
+backend/target/
+
+# Frontend (Angular / pnpm)
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Sistema operativo
+.DS_Store
+Thumbs.db

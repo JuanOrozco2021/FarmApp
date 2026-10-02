@@ -1,0 +1,49 @@
+<div class="page-header">
+  <h2>Configuracion del negocio</h2>
+</div>
+
+<p-card>
+  <ng-container *ngIf="!loading(); else loadingTpl">
+
+    <p-message *ngIf="!canManage" severity="info" styleClass="w-full mb-3"
+               text="Solo un usuario con permiso de administracion puede modificar esta configuracion."></p-message>
+    <p-message *ngIf="errorMessage()" severity="error" [text]="errorMessage()!" styleClass="w-full mb-3"></p-message>
+    <p-message *ngIf="savedMessage()" severity="success" [text]="savedMessage()!" styleClass="w-full mb-3"></p-message>
+
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <div class="form-grid">
+        <div class="form-field">
+          <label for="pharmacyName">Nombre de la farmacia *</label>
+          <input id="pharmacyName" pInputText formControlName="pharmacyName" placeholder="Ej. Drogueria La Campesina" />
+          <span class="hint">Aparece como titulo en el encabezado del ticket de venta.</span>
+        </div>
+
+        <div class="form-field">
+          <label for="nit">NIT</label>
+          <input id="nit" pInputText formControlName="nit" placeholder="Ej. 900.123.456-7" />
+          <span class="hint">Aparece como subtitulo, debajo del nombre, en el ticket.</span>
+        </div>
+
+        <div class="form-field">
+          <label for="address">Direccion</label>
+          <input id="address" pInputText formControlName="address" placeholder="Ej. Calle 10 # 5-20, Bogota" />
+          <span class="hint">Aparece debajo del NIT en el ticket.</span>
+        </div>
+
+        <div class="form-field">
+          <label for="expirationAlertDays">Dias de alerta de vencimiento *</label>
+          <p-inputNumber inputId="expirationAlertDays" formControlName="expirationAlertDays" [min]="1" />
+          <span class="hint">Con cuantos dias de anticipacion avisar antes de que un lote venza.</span>
+        </div>
+      </div>
+
+      <div class="form-actions" *ngIf="canManage">
+        <p-button type="submit" label="Guardar cambios" [loading]="saving()" />
+      </div>
+    </form>
+  </ng-container>
+
+  <ng-template #loadingTpl>
+    <p>Cargando configuracion...</p>
+  </ng-template>
+</p-card>

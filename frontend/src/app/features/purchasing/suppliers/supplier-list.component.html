@@ -1,0 +1,98 @@
+<div class="page-header">
+  <h2>Proveedores</h2>
+  <p-button label="Nuevo proveedor" icon="pi pi-plus" (onClick)="openNew()"
+            *ngIf="authService.hasPermission('PURCHASE_MANAGE')" />
+</div>
+
+<div class="filters">
+  <input pInputText type="text" placeholder="Buscar por nombre o NIT..." [(ngModel)]="search" (ngModelChange)="onFilterChange()" />
+</div>
+
+<p-table
+  [value]="suppliers"
+  [lazy]="true"
+  (onLazyLoad)="load($event)"
+  [paginator]="true"
+  [rows]="15"
+  [totalRecords]="totalRecords"
+  [loading]="loading"
+  [rowHover]="true"
+  dataKey="id"
+  responsiveLayout="scroll">
+
+  <ng-template pTemplate="header">
+    <tr>
+      <th>Nombre</th>
+      <th>NIT / RUC</th>
+      <th>Contacto</th>
+      <th>Telefono</th>
+      <th>Correo</th>
+      <th>Estado</th>
+      <th></th>
+    </tr>
+  </ng-template>
+
+  <ng-template pTemplate="body" let-supplier>
+    <tr>
+      <td>{{ supplier.name }}</td>
+      <td>{{ supplier.taxId || '—' }}</td>
+      <td>{{ supplier.contactName || '—' }}</td>
+      <td>{{ supplier.phone || '—' }}</td>
+      <td>{{ supplier.email || '—' }}</td>
+      <td>
+        <p-tag [value]="supplier.active ? 'Activo' : 'Inactivo'" [severity]="supplier.active ? 'success' : 'danger'" />
+      </td>
+      <td style="white-space:nowrap">
+        <p-button icon="pi pi-pencil" [text]="true" (onClick)="openEdit(supplier)"
+                  *ngIf="authService.hasPermission('PURCHASE_MANAGE')" />
+        <p-button [icon]="supplier.active ? 'pi pi-ban' : 'pi pi-check'" [text]="true" (onClick)="toggleActive(supplier)"
+                  *ngIf="authService.hasPermission('PURCHASE_MANAGE')" />
+      </td>
+    </tr>
+  </ng-template>
+
+  <ng-template pTemplate="emptymessage">
+    <tr><td colspan="7">No se encontraron proveedores.</td></tr>
+  </ng-template>
+</p-table>
+
+<p-dialog [header]="editingId ? 'Editar proveedor' : 'Nuevo proveedor'" [(visible)]="showDialog" [modal]="true" [style]="{ width: '28rem' }">
+  <form [formGroup]="supplierForm" (ngSubmit)="submit()">
+    <div class="form-field">
+      <label for="name">Nombre</label>
+      <input id="name" pInputText formControlName="name" />
+    </div>
+    <div class="form-field" style="margin-top:0.75rem">
+      <label for="taxId">NIT / RUC (opcional)</label>
+      <input id="taxId" pInputText formControlName="taxId" />
+    </div>
+    <div class="form-field" style="margin-top:0.75rem">
+      <label for="phone">Telefono</label>
+      <input id="phone" pInputText formControlName="phone" />
+    </div>
+    <div class="form-field" style="margin-top:0.75rem">
+      <label for="email">Correo</label>
+      <input id="email" pInputText formControlName="email" />
+    </div>
+    <div class="form-field" style="margin-top:0.75rem">
+      <label for="address">Direccion</label>
+      <input id="address" pInputText formControlName="address" />
+    </div>
+    <div class="form-field" style="margin-top:0.75rem">
+      <label for="contactName">Persona de contacto (opcional)</label>
+      <input id="contactName" pInputText formControlName="contactName" />
+    </div>
+    <div class="form-field" style="margin-top:0.75rem">
+      <label for="paymentTermsDays">Dias de credito pactados (opcional, informativo)</label>
+      <p-inputNumber inputId="paymentTermsDays" formControlName="paymentTermsDays" [min]="0" [showButtons]="true" />
+    </div>
+    <div class="form-field" style="margin-top:0.75rem">
+      <label for="notes">Notas (opcional)</label>
+      <input id="notes" pInputText formControlName="notes" />
+    </div>
+    <div class="form-actions">
+      <p-button type="submit" label="Guardar" [loading]="saving()" />
+      <p-button type="button" label="Cancelar" severity="secondary" [text]="true" (onClick)="showDialog = false" />
+    </div>
+  </form>
+</p-dialog>

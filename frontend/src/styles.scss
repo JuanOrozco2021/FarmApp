@@ -1,0 +1,285 @@
+/* Estilos globales. Los estilos de PrimeNG/PrimeFlex se importan desde angular.json. */
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #f4f7f5;
+}
+
+/* Utilidades compartidas por las pantallas de features/ */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+
+  h2 { margin: 0; }
+}
+
+.filters {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+
+  input { min-width: 260px; }
+}
+
+.clickable-row { cursor: pointer; }
+
+.rx-icon {
+  color: #b5622a;
+  margin-left: 0.35rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem 1.5rem;
+
+  @media (max-width: 720px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+
+  label { font-size: 0.85rem; font-weight: 600; color: #52645c; }
+  input, textarea, .p-dropdown, .p-inputnumber { width: 100%; }
+}
+
+.form-field-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.section-title {
+  font-weight: 600;
+  margin: 1.75rem 0 0.75rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid #d9e1dc;
+}
+
+.hint {
+  font-size: 0.85rem;
+  color: #52645c;
+  margin: -0.25rem 0 0.75rem;
+}
+
+.muted { color: #7c8a83; font-size: 0.85rem; }
+
+/* Punto de venta (Fase 6) */
+.pos-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+
+  h2 { margin: 0; }
+}
+
+.pos-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
+  gap: 1.25rem;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pos-column { display: flex; flex-direction: column; }
+
+.search-results {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  border: 1px solid #d9e1dc;
+  border-radius: 6px;
+  max-height: 220px;
+  overflow-y: auto;
+
+  li {
+    padding: 0.45rem 0.65rem;
+    cursor: pointer;
+    border-bottom: 1px solid #eef2f0;
+
+    &:last-child { border-bottom: none; }
+    &:hover { background: #f4f7f5; }
+  }
+}
+
+.presentation-picker {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  label { font-size: 0.85rem; font-weight: 600; color: #52645c; }
+}
+
+.presentation-info {
+  font-size: 0.85rem;
+  color: #52645c;
+}
+
+.qty-input {
+  width: 6rem;
+
+  input { width: 100%; }
+}
+
+.payment-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.6rem;
+  flex-wrap: wrap;
+
+  .payment-method { min-width: 10rem; }
+  .payment-amount input { width: 8rem; }
+}
+
+.totals-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.3rem 0;
+  font-size: 0.95rem;
+}
+
+.totals-strong {
+  font-weight: 700;
+  border-top: 1px solid #d9e1dc;
+  border-bottom: 1px solid #d9e1dc;
+  margin: 0.3rem 0;
+}
+
+.totals-negative { color: #b3261e; }
+
+.receipt { max-width: 640px; margin: 0 auto; }
+
+.receipt-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.75rem 0;
+
+  th, td {
+    text-align: left;
+    padding: 0.4rem 0.5rem;
+    border-bottom: 1px solid #eef2f0;
+  }
+}
+
+.receipt-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.lot-chip {
+  display: inline-block;
+  background: #eef2f0;
+  border-radius: 4px;
+  padding: 0.1rem 0.4rem;
+  margin-right: 0.3rem;
+  font-size: 0.8rem;
+}
+
+.selected-customer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #eef2f0;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+}
+
+/* Dashboard (Fase 9) */
+.dashboard-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.dashboard-stat {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #2f6b4f;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.dashboard-column { display: flex; flex-direction: column; }
+
+.alert-summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #eef2f0;
+  cursor: pointer;
+
+  &:last-of-type { border-bottom: none; }
+  &:hover { background: #f4f7f5; }
+}
+
+.audit-json {
+  background: #f4f7f5;
+  border: 1px solid #e2e8e4;
+  border-radius: 6px;
+  padding: 0.75rem;
+  font-size: 0.85rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 16rem;
+  overflow-y: auto;
+}
+
+// Impresion de tickets de venta (impresora POS termica).
+// app-sale-ticket se queda oculto en pantalla; al llamar a window.print(),
+// este truco oculta el resto de la app (sidebar, tablas, botones...) y
+// deja visible solo el ticket, sin necesidad de abrir una ventana aparte
+// ni de ningun software/driver adicional: cualquier impresora POS que ya
+// este instalada como impresora en Windows aparece en el dialogo de
+// impresion del navegador.
+.print-ticket {
+  display: none;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .print-ticket,
+  .print-ticket * {
+    visibility: visible;
+  }
+
+  .print-ticket {
+    display: block !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  @page {
+    size: 80mm auto;
+    margin: 3mm;
+  }
+}

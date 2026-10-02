@@ -1,0 +1,112 @@
+<div class="page-header">
+  <h2>{{ editingId ? 'Editar compra' : 'Nueva compra' }}</h2>
+  <p-button label="Volver" severity="secondary" [text]="true" (onClick)="goBack()" />
+</div>
+
+<p-card header="Datos generales">
+  <div class="form-grid">
+    <div class="form-field">
+      <label for="supplier">Proveedor</label>
+      <p-dropdown inputId="supplier" [options]="suppliers" optionLabel="name" optionValue="id"
+                  [(ngModel)]="supplierId" [filter]="true" placeholder="Selecciona un proveedor" />
+    </div>
+    <div class="form-field">
+      <label for="invoice">Numero de factura (opcional)</label>
+      <input id="invoice" pInputText [(ngModel)]="invoiceNumber" />
+    </div>
+    <div class="form-field">
+      <label for="date">Fecha de compra</label>
+      <p-calendar inputId="date" [(ngModel)]="purchaseDate" dateFormat="yy-mm-dd" [showIcon]="true" />
+    </div>
+    <div class="form-field">
+      <label for="notes">Notas (opcional)</label>
+      <input id="notes" pInputText [(ngModel)]="notes" />
+    </div>
+  </div>
+</p-card>
+
+<p-card header="Agregar item" [style]="{ 'margin-top': '1.5rem' }">
+  <div class="form-grid">
+    <div class="form-field" style="grid-column: span 2">
+      <label for="productSearch">Producto</label>
+      <input id="productSearch" pInputText [(ngModel)]="productQuery" (ngModelChange)="onProductQueryChange()"
+             placeholder="Buscar por nombre o codigo..." />
+      <div *ngIf="productResults.length" class="hint" style="border:1px solid #ddd; border-radius:6px; margin-top:0.25rem;">
+        <div *ngFor="let product of productResults" class="clickable-row" style="padding:0.4rem 0.6rem"
+             (click)="selectProduct(product)">
+          {{ product.name }} <span class="hint">({{ product.internalCode }})</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label for="presentation">Presentacion</label>
+      <p-dropdown inputId="presentation" [options]="presentations" optionLabel="unitName" optionValue="id"
+                  [(ngModel)]="draftPresentationId" placeholder="Selecciona una presentacion"
+                  [disabled]="!presentations.length" />
+    </div>
+    <div class="form-field">
+      <label for="qty">Cantidad ({{ selectedPresentation?.unitName || 'presentacion' }})</label>
+      <p-inputNumber inputId="qty" [(ngModel)]="draftQuantity" [min]="0.001" />
+      <span class="hint" *ngIf="selectedPresentation">Equivale a {{ draftQuantityBase }} en unidad base.</span>
+    </div>
+    <div class="form-field">
+      <label for="cost">Costo unitario (por {{ selectedPresentation?.unitName || 'presentacion' }})</label>
+      <p-inputNumber inputId="cost" [(ngModel)]="draftUnitCost" mode="currency" currency="COP" locale="es-CO" [min]="0" />
+    </div>
+    <div class="form-field">
+      <label for="lot">Codigo de lote (si el producto controla lote)</label>
+      <input id="lot" pInputText [(ngModel)]="draftLotCode" />
+    </div>
+    <div class="form-field">
+      <label for="exp">Fecha de vencimiento (si el producto la controla)</label>
+      <p-calendar inputId="exp" [(ngModel)]="draftExpirationDate" dateFormat="yy-mm-dd" [showIcon]="true" />
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <p-button label="Agregar item" icon="pi pi-plus" (onClick)="addItem()" [disabled]="!draftPresentationId" />
+  </div>
+</p-card>
+
+<h3 style="margin-top:1.5rem">Items de la compra</h3>
+<p-table [value]="items" responsiveLayout="scroll">
+  <ng-template pTemplate="header">
+    <tr>
+      <th>Producto</th>
+      <th>Cantidad</th>
+      <th>Equiv. unidad base</th>
+      <th>Costo unitario</th>
+      <th>Subtotal</th>
+      <th>Lote</th>
+      <th>Vence</th>
+      <th></th>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="body" let-item let-i="rowIndex">
+    <tr>
+      <td>{{ item.productName }}</td>
+      <td>{{ item.quantityPresentation }} {{ item.unitCode }}</td>
+      <td>{{ item.quantityPresentation * item.conversionFactor }}</td>
+      <td>${{ item.unitCost }}</td>
+      <td>${{ lineTotal(item) }}</td>
+      <td>{{ item.lotCode || '—' }}</td>
+      <td>{{ item.expirationDate || '—' }}</td>
+      <td><p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="removeItem(i)" /></td>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="emptymessage">
+    <tr><td colspan="8">Todavia no has agregado items a esta compra.</td></tr>
+  </ng-template>
+  <ng-template pTemplate="footer">
+    <tr>
+      <td colspan="4" style="text-align:right"><strong>Total</strong></td>
+      <td colspan="4"><strong>${{ total }}</strong></td>
+    </tr>
+  </ng-template>
+</p-table>
+
+<div class="form-actions" style="margin-top:1rem">
+  <p-button label="Guardar compra" [loading]="saving()" [disabled]="!supplierId || !items.length" (onClick)="submit()" />
+  <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="goBack()" />
+</div>

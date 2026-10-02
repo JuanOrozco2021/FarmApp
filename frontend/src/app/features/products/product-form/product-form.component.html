@@ -1,0 +1,115 @@
+<div class="page-header">
+  <h2>Nuevo producto</h2>
+</div>
+
+<p-card>
+  <form [formGroup]="form" (ngSubmit)="submit()">
+
+    <div class="form-grid">
+      <div class="form-field">
+        <label for="name">Nombre comercial *</label>
+        <input id="name" pInputText formControlName="name" />
+      </div>
+
+      <div class="form-field">
+        <label for="baseUnit">Unidad base *</label>
+        <p-dropdown inputId="baseUnit" [options]="units" optionLabel="name" optionValue="code"
+                    formControlName="baseUnitCode" placeholder="Selecciona la unidad base" [filter]="true" />
+      </div>
+
+      <div class="form-field">
+        <label for="category">Categoría</label>
+        <p-dropdown inputId="category" [options]="categories" optionLabel="name" optionValue="id"
+                    formControlName="categoryId" placeholder="Selecciona una categoría" [showClear]="true" />
+      </div>
+
+      <div class="form-field">
+        <label for="laboratory">Laboratorio</label>
+        <p-dropdown inputId="laboratory" [options]="laboratories" optionLabel="name" optionValue="id"
+                    formControlName="laboratoryId" placeholder="Selecciona un laboratorio" [showClear]="true" />
+      </div>
+
+      <div class="form-field">
+        <label for="ingredient">Principio activo</label>
+        <p-dropdown inputId="ingredient" [options]="activeIngredients" optionLabel="name" optionValue="id"
+                    formControlName="activeIngredientId" placeholder="Selecciona un principio activo" [showClear]="true" />
+      </div>
+
+      <div class="form-field">
+        <label for="concentration">Concentración</label>
+        <input id="concentration" pInputText formControlName="concentration" placeholder="ej. 500 mg" />
+      </div>
+
+      <div class="form-field">
+        <label for="form">Forma farmacéutica</label>
+        <input id="form" pInputText formControlName="pharmaceuticalForm" placeholder="ej. Tableta" />
+      </div>
+
+      <div class="form-field">
+        <label for="brand">Marca</label>
+        <input id="brand" pInputText formControlName="brand" />
+      </div>
+    </div>
+
+    <div class="form-field" style="margin-top: 1rem;">
+      <label for="description">Descripción</label>
+      <textarea id="description" pInputTextarea rows="2" formControlName="description"></textarea>
+    </div>
+
+    <div class="section-title">Existencias</div>
+    <div class="form-grid">
+      <div class="form-field">
+        <label for="minStock">Stock mínimo (en unidad base)</label>
+        <p-inputNumber inputId="minStock" formControlName="minStockBase" [min]="0" />
+      </div>
+      <div class="form-field">
+        <label for="maxStock">Stock máximo (en unidad base)</label>
+        <p-inputNumber inputId="maxStock" formControlName="maxStockBase" [min]="0" />
+      </div>
+    </div>
+
+    <div class="section-title">Reglas del producto</div>
+    <div class="form-grid">
+      <div class="form-field-checkbox">
+        <p-checkbox formControlName="requiresPrescription" [binary]="true" inputId="rx" />
+        <label for="rx">Requiere receta</label>
+      </div>
+      <div class="form-field-checkbox">
+        <p-checkbox formControlName="fractionable" [binary]="true" inputId="fractionable" />
+        <label for="fractionable">Es fraccionable</label>
+      </div>
+      <div class="form-field-checkbox">
+        <p-checkbox formControlName="controlsLot" [binary]="true" inputId="lot" />
+        <label for="lot">Controla lote</label>
+      </div>
+      <div class="form-field-checkbox">
+        <p-checkbox formControlName="controlsExpiration" [binary]="true" inputId="exp" />
+        <label for="exp">Controla vencimiento</label>
+      </div>
+    </div>
+
+    <div class="section-title">Presentación base</div>
+    <p class="hint">Se crea automáticamente en la unidad base seleccionada arriba, con factor de conversión 1.</p>
+    <div class="form-grid">
+      <div class="form-field">
+        <label for="salePrice">Precio de venta *</label>
+        <p-inputNumber inputId="salePrice" formControlName="salePrice" mode="currency" currency="COP" locale="es-CO" [min]="0" />
+      </div>
+      <div class="form-field">
+        <label for="purchasePrice">Precio de compra</label>
+        <p-inputNumber inputId="purchasePrice" formControlName="purchasePrice" mode="currency" currency="COP" locale="es-CO" [min]="0" />
+      </div>
+      <div class="form-field">
+        <label for="barcode">Código de barras (opcional)</label>
+        <input id="barcode" pInputText formControlName="barcode" placeholder="Escanea o escribe el código" />
+      </div>
+    </div>
+
+    <p-message *ngIf="errorMessage()" severity="error" [text]="errorMessage()!" />
+
+    <div class="form-actions">
+      <p-button type="submit" label="Guardar producto" [loading]="saving()" />
+      <p-button type="button" label="Cancelar" severity="secondary" [text]="true" (onClick)="cancel()" />
+    </div>
+  </form>
+</p-card>

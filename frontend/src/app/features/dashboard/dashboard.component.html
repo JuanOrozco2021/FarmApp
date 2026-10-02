@@ -1,0 +1,94 @@
+<div class="page-header">
+  <div>
+    <h2>Dashboard</h2>
+    <span class="hint" *ngIf="authService.session() as session">
+      Sesion iniciada como <strong>{{ session.fullName }}</strong> ({{ session.roles.join(', ') }})
+    </span>
+  </div>
+</div>
+
+<div class="filters">
+  <p-selectButton [options]="rangeOptions" optionLabel="label" optionValue="value"
+                  [(ngModel)]="selectedRange" (onChange)="onRangeChange()"></p-selectButton>
+
+  <p-calendar *ngIf="selectedRange === 'PERSONALIZADO'" [(ngModel)]="customDates" selectionMode="range"
+              dateFormat="yy-mm-dd" [showIcon]="true" placeholder="Selecciona un rango"
+              (onSelect)="onCustomDatesChange()"></p-calendar>
+</div>
+
+<div class="dashboard-cards">
+  <p-card header="Ventas">
+    <div class="dashboard-stat">{{ salesSummary?.totalSales ?? 0 }}</div>
+    <span class="muted">ventas activas en el periodo</span>
+  </p-card>
+
+  <p-card header="Ingresos">
+    <div class="dashboard-stat">${{ salesSummary?.totalRevenue ?? 0 }}</div>
+    <span class="muted">total cobrado (excluye anuladas)</span>
+  </p-card>
+
+  <p-card header="Ticket promedio">
+    <div class="dashboard-stat">${{ salesSummary?.averageTicket ?? 0 }}</div>
+    <span class="muted">ingresos / cantidad de ventas</span>
+  </p-card>
+
+  <p-card header="Descuentos">
+    <div class="dashboard-stat">${{ salesSummary?.totalDiscount ?? 0 }}</div>
+    <span class="muted">total aplicado en el periodo</span>
+  </p-card>
+</div>
+
+<div class="dashboard-grid">
+
+  <p-card header="Formas de pago" styleClass="dashboard-column">
+    <p-table [value]="salesSummary?.paymentBreakdown ?? []">
+      <ng-template pTemplate="header">
+        <tr><th>Forma de pago</th><th>Monto</th></tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-row>
+        <tr><td>{{ row.paymentMethod }}</td><td>${{ row.amount }}</td></tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr><td colspan="2">Sin ventas en este periodo.</td></tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+
+  <p-card header="Alertas de inventario" styleClass="dashboard-column">
+    <div class="alert-summary-row" (click)="goToInventoryAlerts()">
+      <span>Stock bajo</span>
+      <p-tag [value]="(inventoryAlerts?.lowStockCount ?? 0).toString()" severity="danger"></p-tag>
+    </div>
+    <div class="alert-summary-row" (click)="goToInventoryAlerts()">
+      <span>Por vencer</span>
+      <p-tag [value]="(inventoryAlerts?.expiringSoonCount ?? 0).toString()" severity="warn"></p-tag>
+    </div>
+    <div class="alert-summary-row" (click)="goToInventoryAlerts()">
+      <span>Vencidos</span>
+      <p-tag [value]="(inventoryAlerts?.expiredCount ?? 0).toString()" severity="danger"></p-tag>
+    </div>
+    <p class="muted mt-2">Click en cualquier fila para ver el detalle en Inventario.</p>
+  </p-card>
+
+</div>
+
+<h3 style="margin-top:1.5rem">Productos mas vendidos</h3>
+<p-table [value]="topProducts" [loading]="loading" responsiveLayout="scroll">
+  <ng-template pTemplate="header">
+    <tr>
+      <th>Producto</th>
+      <th>Cantidad vendida (unidad base)</th>
+      <th>Ingresos</th>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="body" let-product>
+    <tr>
+      <td>{{ product.productName }}</td>
+      <td>{{ product.quantityBase }}</td>
+      <td>${{ product.revenue }}</td>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="emptymessage">
+    <tr><td colspan="3">No hay ventas registradas en este periodo.</td></tr>
+  </ng-template>
+</p-table>

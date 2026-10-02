@@ -1,0 +1,88 @@
+<ng-container *ngIf="customer() as c">
+  <div class="page-header">
+    <div>
+      <h2>{{ c.name }}</h2>
+      <span class="hint">{{ c.documentType ? (c.documentType + ' ' + c.documentNumber) : 'Sin documento registrado' }}</span>
+    </div>
+    <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+      <p-tag [value]="c.active ? 'Activo' : 'Inactivo'" [severity]="c.active ? 'success' : 'danger'" />
+      <p-button [label]="c.active ? 'Desactivar' : 'Activar'" [severity]="c.active ? 'danger' : 'success'" [text]="true"
+                [loading]="processing()" (onClick)="toggleActive()"
+                *ngIf="authService.hasPermission('CUSTOMER_MANAGE')" />
+      <p-button label="Volver" severity="secondary" [text]="true" (onClick)="goBack()" />
+    </div>
+  </div>
+
+  <p-card header="Datos del cliente">
+    <form [formGroup]="customerForm" (ngSubmit)="submit()">
+      <p-message *ngIf="formError" severity="error" [text]="formError" styleClass="w-full mb-3"></p-message>
+      <div class="form-grid">
+        <div class="form-field">
+          <label for="name">Nombre</label>
+          <input id="name" pInputText formControlName="name" [readonly]="!authService.hasPermission('CUSTOMER_MANAGE')" />
+        </div>
+        <div class="form-field">
+          <label for="documentType">Tipo de documento</label>
+          <p-dropdown inputId="documentType" [options]="documentTypeOptions" optionLabel="label" optionValue="value"
+                      formControlName="documentType" placeholder="Sin documento" [showClear]="true"
+                      [disabled]="!authService.hasPermission('CUSTOMER_MANAGE')" />
+        </div>
+        <div class="form-field">
+          <label for="documentNumber">Numero de documento</label>
+          <input id="documentNumber" pInputText formControlName="documentNumber" [readonly]="!authService.hasPermission('CUSTOMER_MANAGE')" />
+        </div>
+        <div class="form-field">
+          <label for="phone">Telefono</label>
+          <input id="phone" pInputText formControlName="phone" [readonly]="!authService.hasPermission('CUSTOMER_MANAGE')" />
+        </div>
+        <div class="form-field">
+          <label for="email">Correo</label>
+          <input id="email" pInputText formControlName="email" [readonly]="!authService.hasPermission('CUSTOMER_MANAGE')" />
+        </div>
+        <div class="form-field">
+          <label for="address">Direccion</label>
+          <input id="address" pInputText formControlName="address" [readonly]="!authService.hasPermission('CUSTOMER_MANAGE')" />
+        </div>
+      </div>
+      <div class="form-actions" *ngIf="authService.hasPermission('CUSTOMER_MANAGE')">
+        <p-button type="submit" label="Guardar cambios" [loading]="saving()" />
+      </div>
+    </form>
+  </p-card>
+
+  <h3 style="margin-top:1.5rem">Historial de compras</h3>
+  <p-table
+    [value]="sales"
+    [lazy]="true"
+    (onLazyLoad)="loadSales($event)"
+    [paginator]="true"
+    [rows]="10"
+    [totalRecords]="salesTotalRecords"
+    [loading]="salesLoading"
+    [rowHover]="true"
+    dataKey="id"
+    responsiveLayout="scroll">
+
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Codigo</th>
+        <th>Fecha</th>
+        <th>Total</th>
+        <th>Estado</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-sale>
+      <tr (click)="goToSale(sale)" class="clickable-row">
+        <td>{{ sale.saleCode }}</td>
+        <td>{{ sale.createdAt | date: 'medium' }}</td>
+        <td>${{ sale.total }}</td>
+        <td><p-tag [value]="sale.status" [severity]="saleStatusSeverity(sale.status)" /></td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr><td colspan="4">Este cliente no tiene compras registradas.</td></tr>
+    </ng-template>
+  </p-table>
+</ng-container>

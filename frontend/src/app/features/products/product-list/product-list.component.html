@@ -1,0 +1,55 @@
+<div class="page-header">
+  <h2>Productos</h2>
+  <p-button label="Nuevo producto" icon="pi pi-plus" (onClick)="goToNew()" *ngIf="authService.hasPermission('PRODUCT_MANAGE')" />
+</div>
+
+<div class="filters">
+  <input pInputText type="text" placeholder="Buscar por nombre o código..." [(ngModel)]="search" (ngModelChange)="onFilterChange()" />
+  <p-dropdown [options]="categories" optionLabel="name" optionValue="id" placeholder="Todas las categorías"
+              [(ngModel)]="categoryId" (onChange)="onFilterChange()" [showClear]="true" />
+</div>
+
+<p-table
+  [value]="products"
+  [lazy]="true"
+  (onLazyLoad)="loadProducts($event)"
+  [paginator]="true"
+  [rows]="15"
+  [totalRecords]="totalRecords"
+  [loading]="loading"
+  [rowHover]="true"
+  dataKey="id"
+  responsiveLayout="scroll">
+
+  <ng-template pTemplate="header">
+    <tr>
+      <th>Código</th>
+      <th>Nombre</th>
+      <th>Categoría</th>
+      <th>Laboratorio</th>
+      <th>Precio base</th>
+      <th>Estado</th>
+    </tr>
+  </ng-template>
+
+  <ng-template pTemplate="body" let-product>
+    <tr (click)="goToDetail(product)" class="clickable-row">
+      <td>{{ product.internalCode }}</td>
+      <td>
+        {{ product.name }}
+        <i class="pi pi-exclamation-triangle rx-icon" *ngIf="product.requiresPrescription" title="Requiere receta"></i>
+      </td>
+      <td>{{ product.categoryName || '—' }}</td>
+      <td>{{ product.laboratoryName || '—' }}</td>
+      <td>{{ product.basePrice ? ('$' + product.basePrice) : '—' }} / {{ product.baseUnitCode }}</td>
+      <td>
+        <p-tag [value]="product.status === 'ACTIVE' ? 'Activo' : 'Inactivo'"
+               [severity]="product.status === 'ACTIVE' ? 'success' : 'danger'" />
+      </td>
+    </tr>
+  </ng-template>
+
+  <ng-template pTemplate="emptymessage">
+    <tr><td colspan="6">No se encontraron productos.</td></tr>
+  </ng-template>
+</p-table>

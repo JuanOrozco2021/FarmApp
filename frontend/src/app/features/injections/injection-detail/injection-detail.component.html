@@ -1,0 +1,53 @@
+<ng-container *ngIf="record() as r">
+  <div class="page-header">
+    <div>
+      <h2>{{ r.injectionCode }}</h2>
+      <span class="hint">
+        <a *ngIf="r.customerId; else anonPatient" (click)="goToCustomer(r.customerId)" class="clickable-row">{{ r.patientName }}</a>
+        <ng-template #anonPatient>{{ r.patientName }}</ng-template>
+        · {{ r.appliedAt | date: 'medium' }}
+      </span>
+    </div>
+    <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+      <p-tag [value]="r.status" [severity]="statusSeverity(r.status)" />
+      <p-button label="Anular registro" severity="danger" [text]="true"
+                *ngIf="r.status === 'ACTIVA' && authService.hasPermission('INJECTION_CANCEL')"
+                (onClick)="openCancelDialog()" />
+      <p-button label="Volver" severity="secondary" [text]="true" (onClick)="goBack()" />
+    </div>
+  </div>
+
+  <p-message *ngIf="r.status === 'ANULADA'" severity="error" styleClass="w-full mb-3"
+              [text]="'Registro anulado' + (r.cancelledAt ? (' el ' + (r.cancelledAt | date: 'medium')) : '') + (r.cancelledReason ? ('. Motivo: ' + r.cancelledReason) : '')">
+  </p-message>
+
+  <p-card header="Servicio">
+    <div class="form-grid">
+      <div><strong>Medicamento:</strong> {{ r.medicationName }}</div>
+      <div><strong>Dosis:</strong> {{ r.dose || '—' }}</div>
+      <div><strong>Sitio de aplicacion:</strong> {{ r.applicationSite || '—' }}</div>
+      <div><strong>Lote:</strong> {{ r.lotCode || '—' }}</div>
+      <div>
+        <strong>Venta relacionada:</strong>
+        <a *ngIf="r.relatedSaleId; else noSale" (click)="goToRelatedSale(r.relatedSaleId)" class="clickable-row">Ver venta #{{ r.relatedSaleId }}</a>
+        <ng-template #noSale>—</ng-template>
+      </div>
+      <div><strong>Tarifa:</strong> ${{ r.fee }} ({{ r.paymentMethod }})</div>
+    </div>
+    <p *ngIf="r.observations" class="mt-2"><strong>Observaciones:</strong> {{ r.observations }}</p>
+  </p-card>
+</ng-container>
+
+<p-dialog header="Anular registro" [(visible)]="showCancelDialog" [modal]="true" [style]="{ width: '26rem' }">
+  <form [formGroup]="cancelForm" (ngSubmit)="submitCancel()">
+    <p-message *ngIf="cancelError" severity="error" [text]="cancelError" styleClass="w-full mb-3"></p-message>
+    <div class="form-field">
+      <label for="cancelReason">Motivo de la anulacion</label>
+      <input id="cancelReason" pInputText formControlName="reason" placeholder="Ej: registro duplicado por error" />
+    </div>
+    <div class="form-actions">
+      <p-button type="submit" label="Confirmar anulacion" severity="danger" [loading]="processing()" />
+      <p-button type="button" label="Cerrar" severity="secondary" [text]="true" (onClick)="showCancelDialog = false" />
+    </div>
+  </form>
+</p-dialog>

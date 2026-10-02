@@ -1,0 +1,142 @@
+<ng-container *ngIf="product() as p">
+  <div class="page-header">
+    <div>
+      <h2>{{ p.name }}</h2>
+      <span class="hint">{{ p.internalCode }} · Unidad base: {{ p.baseUnitCode }}</span>
+    </div>
+    <div style="display:flex; gap:0.5rem;">
+      <p-tag [value]="p.status === 'ACTIVE' ? 'Activo' : 'Inactivo'" [severity]="p.status === 'ACTIVE' ? 'success' : 'danger'" />
+      <p-button [label]="p.status === 'ACTIVE' ? 'Desactivar' : 'Activar'" severity="secondary" [text]="true"
+                (onClick)="toggleStatus()" *ngIf="authService.hasPermission('PRODUCT_MANAGE')" />
+      <p-button label="Ver inventario" icon="pi pi-box" severity="secondary" (onClick)="goToInventory()" />
+      <p-button label="Volver" severity="secondary" [text]="true" (onClick)="goBack()" />
+    </div>
+  </div>
+
+  <p-card header="Información general">
+    <div class="form-grid">
+      <div><strong>Principio activo:</strong> {{ p.activeIngredientName || '—' }}</div>
+      <div><strong>Concentración:</strong> {{ p.concentration || '—' }}</div>
+      <div><strong>Forma farmacéutica:</strong> {{ p.pharmaceuticalForm || '—' }}</div>
+      <div><strong>Categoría:</strong> {{ p.categoryName || '—' }}</div>
+      <div><strong>Laboratorio:</strong> {{ p.laboratoryName || '—' }}</div>
+      <div><strong>Marca:</strong> {{ p.brand || '—' }}</div>
+      <div><strong>Stock mínimo/máximo:</strong> {{ p.minStockBase }} / {{ p.maxStockBase || '—' }} {{ p.baseUnitCode }}</div>
+      <div>
+        <strong>Reglas:</strong>
+        <span *ngIf="p.requiresPrescription">Requiere receta · </span>
+        <span *ngIf="p.fractionable">Fraccionable · </span>
+        <span *ngIf="p.controlsLot">Controla lote · </span>
+        <span *ngIf="p.controlsExpiration">Controla vencimiento</span>
+      </div>
+    </div>
+    <p *ngIf="p.description">{{ p.description }}</p>
+  </p-card>
+
+  <div class="page-header" style="margin-top: 1.5rem;">
+    <h3 style="margin:0">Presentaciones</h3>
+    <p-button label="Agregar presentación" icon="pi pi-plus" (onClick)="openAddPresentation()"
+              *ngIf="authService.hasPermission('PRODUCT_MANAGE')" />
+  </div>
+
+  <p-table [value]="p.presentations" dataKey="id">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Unidad</th>
+        <th>Factor</th>
+        <th>Precio venta</th>
+        <th>Precio compra</th>
+        <th>Códigos de barras</th>
+        <th>Base</th>
+        <th></th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-presentation>
+      <tr>
+        <td>{{ presentation.unitName }}</td>
+        <td>{{ presentation.conversionFactor }}</td>
+        <td>${{ presentation.salePrice }}</td>
+        <td>{{ presentation.purchasePrice ? ('$' + presentation.purchasePrice) : '—' }}</td>
+        <td>
+          <p-chip *ngFor="let b of presentation.barcodes" [label]="b.code" [style]="{ 'margin-right': '0.25rem' }" />
+          <span *ngIf="!presentation.barcodes.length" class="hint">Sin código</span>
+        </td>
+        <td>
+          <p-tag *ngIf="presentation.basePresentation" value="Base" severity="info" />
+        </td>
+        <td style="white-space:nowrap">
+          <p-button icon="pi pi-dollar" [text]="true" (onClick)="openPriceDialog(presentation)"
+                    pTooltip="Cambiar precio" *ngIf="authService.hasPermission('PRODUCT_MANAGE')" />
+          <p-button icon="pi pi-history" [text]="true" (onClick)="openHistory(presentation)" pTooltip="Historial de precio" />
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</ng-container>
+
+<p-dialog header="Agregar presentación" [(visible)]="showAddPresentation" [modal]="true" [style]="{ width: '28rem' }">
+  <form [formGroup]="presentationForm" (ngSubmit)="submitPresentation()">
+    <div class="form-field">
+      <label for="unit">Unidad</label>
+      <p-dropdown inputId="unit" [options]="units" optionLabel="name" optionValue="code" formControlName="unitCode" [filter]="true" />
+    </div>
+    <div class="form-field" style="margin-top:0.75rem">
+      <label for="factor">Factor de conversión (cuántas unidades base equivale)</label>
+      <p-inputNumber inputId="factor" formControlName="conversionFactor" [min]="0.000001" />
+    </div>
+    <div class="form-field" style="margin-top:0.75rem">
+      <label for="price">Precio de venta</label>
+      <p-inputNumber inputId="price" formControlName="salePrice" mode="currency" currency="COP" locale="es-CO" [min]="0" />
+    </div>
+    <div class="form-field" style="margin-top:0.75rem">
+      <label for="purchase">Precio de compra</label>
+      <p-inputNumber inputId="purchase" formControlName="purchasePrice" mode="currency" currency="COP" locale="es-CO" [min]="0" />
+    </div>
+    <div class="form-field" style="margin-top:0.75rem">
+      <label for="pbarcode">Código de barras (opcional)</label>
+      <input id="pbarcode" pInputText formControlName="barcode" />
+    </div>
+    <div class="form-actions">
+      <p-button type="submit" label="Guardar" [loading]="savingPresentation()" />
+      <p-button type="button" label="Cancelar" severity="secondary" [text]="true" (onClick)="showAddPresentation = false" />
+    </div>
+  </form>
+</p-dialog>
+
+<p-dialog header="Actualizar precio" [(visible)]="showPriceDialog" [modal]="true" [style]="{ width: '24rem' }">
+  <form [formGroup]="priceForm" (ngSubmit)="submitPrice()" *ngIf="selectedPresentation as sp">
+    <p class="hint">Precio actual: ${{ sp.salePrice }} ({{ sp.unitName }})</p>
+    <div class="form-field">
+      <label for="newPrice">Nuevo precio</label>
+      <p-inputNumber inputId="newPrice" formControlName="newPrice" mode="currency" currency="COP" locale="es-CO" [min]="0" />
+    </div>
+    <div class="form-field" style="margin-top:0.75rem">
+      <label for="reason">Motivo (opcional)</label>
+      <input id="reason" pInputText formControlName="reason" />
+    </div>
+    <div class="form-actions">
+      <p-button type="submit" label="Guardar" [loading]="savingPrice()" />
+      <p-button type="button" label="Cancelar" severity="secondary" [text]="true" (onClick)="showPriceDialog = false" />
+    </div>
+  </form>
+</p-dialog>
+
+<p-dialog header="Historial de precio" [(visible)]="showHistoryDialog" [modal]="true" [style]="{ width: '32rem' }">
+  <p-table [value]="priceHistory">
+    <ng-template pTemplate="header">
+      <tr><th>Fecha</th><th>Precio anterior</th><th>Precio nuevo</th><th>Usuario</th><th>Motivo</th></tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-entry>
+      <tr>
+        <td>{{ entry.changedAt | date: 'short' }}</td>
+        <td>${{ entry.oldPrice }}</td>
+        <td>${{ entry.newPrice }}</td>
+        <td>{{ entry.changedBy || '—' }}</td>
+        <td>{{ entry.reason || '—' }}</td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr><td colspan="5">Sin cambios de precio registrados.</td></tr>
+    </ng-template>
+  </p-table>
+</p-dialog>

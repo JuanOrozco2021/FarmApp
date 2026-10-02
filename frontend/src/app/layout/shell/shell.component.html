@@ -1,0 +1,55 @@
+<header class="app-header">
+  <div class="app-header-left">
+    <span class="app-title">Droguería la Campesina</span>
+    <nav class="app-nav">
+      <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
+      <a routerLink="/pos" routerLinkActive="active">Punto de venta</a>
+      <a routerLink="/ventas" routerLinkActive="active">Ventas</a>
+      <a routerLink="/productos" routerLinkActive="active">Productos</a>
+      <a routerLink="/inventario/alertas" routerLinkActive="active">Inventario</a>
+      <a routerLink="/compras" routerLinkActive="active">Compras</a>
+      <a routerLink="/proveedores" routerLinkActive="active">Proveedores</a>
+      <a routerLink="/clientes" routerLinkActive="active">Clientes</a>
+      <a routerLink="/inyectologia" routerLinkActive="active">Inyectologia</a>
+      <a routerLink="/auditoria" routerLinkActive="active" *ngIf="authService.hasPermission('AUDIT_VIEW')">Auditoria</a>
+      <a routerLink="/usuarios" routerLinkActive="active" *ngIf="authService.hasPermission('USER_MANAGE')">Usuarios</a>
+      <a routerLink="/configuracion" routerLinkActive="active" *ngIf="authService.hasPermission('SETTINGS_MANAGE')">Configuracion</a>
+    </nav>
+  </div>
+  <div class="app-user" *ngIf="authService.session() as session">
+    <span>{{ session.fullName }}</span>
+    <p-button label="Cambiar contrasena" icon="pi pi-lock" size="small" severity="secondary" [text]="true" (onClick)="openPasswordDialog()" />
+    <p-button label="Salir" icon="pi pi-sign-out" size="small" severity="secondary" [text]="true" (onClick)="logout()" />
+  </div>
+</header>
+
+<main class="app-content">
+  <router-outlet />
+</main>
+
+<p-dialog header="Cambiar mi contrasena" [(visible)]="showPasswordDialog" [modal]="true" [style]="{ width: '26rem' }">
+  <form [formGroup]="passwordForm" (ngSubmit)="submitPasswordChange()">
+    <p-message *ngIf="errorMessage()" severity="error" [text]="errorMessage()!" styleClass="w-full mb-3"></p-message>
+    <p-message *ngIf="successMessage()" severity="success" [text]="successMessage()!" styleClass="w-full mb-3"></p-message>
+    <p-message *ngIf="passwordForm.errors?.['mismatch'] && passwordForm.get('confirmPassword')?.touched"
+               severity="warn" text="La confirmacion no coincide con la nueva contrasena." styleClass="w-full mb-3"></p-message>
+
+    <div class="form-field">
+      <label for="sh-current">Contrasena actual</label>
+      <p-password inputId="sh-current" formControlName="currentPassword" [feedback]="false" [toggleMask]="true" styleClass="w-full" />
+    </div>
+    <div class="form-field" style="margin-top:0.75rem">
+      <label for="sh-new">Nueva contrasena (minimo 8 caracteres)</label>
+      <p-password inputId="sh-new" formControlName="newPassword" [feedback]="false" [toggleMask]="true" styleClass="w-full" />
+    </div>
+    <div class="form-field" style="margin-top:0.75rem">
+      <label for="sh-confirm">Confirmar nueva contrasena</label>
+      <p-password inputId="sh-confirm" formControlName="confirmPassword" [feedback]="false" [toggleMask]="true" styleClass="w-full" />
+    </div>
+
+    <div class="form-actions">
+      <p-button type="submit" label="Guardar" [loading]="saving()" />
+      <p-button type="button" label="Cancelar" severity="secondary" [text]="true" (onClick)="showPasswordDialog = false" />
+    </div>
+  </form>
+</p-dialog>

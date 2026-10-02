@@ -1,0 +1,22 @@
+<div class="login-page">
+  <p-card class="login-card">
+    <div class="login-logo">
+      <img src="assets/logo-drogueria-la-campesina.jpg" alt="Drogueria La Campesina" />
+    </div>
+    <form [formGroup]="form" (ngSubmit)="submit()" class="login-form">
+      <div class="field">
+        <label for="username">Usuario</label>
+        <input id="username" type="text" pInputText formControlName="username" autocomplete="username" />
+      </div>
+
+      <div class="field">
+        <label for="password">Contrasena</label>
+        <p-password inputId="password" formControlName="password" [feedback]="false" [toggleMask]="true" autocomplete="current-password" />
+      </div>
+
+      <p-message *ngIf="errorMessage()" severity="error" [text]="errorMessage()!" />
+
+      <p-button type="submit" label="Ingresar" [loading]="loading()" styleClass="w-full" />
+    </form>
+  </p-card>
+</div>
