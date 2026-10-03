@@ -4,6 +4,7 @@ import com.boticario.common.exception.NotFoundException;
 import com.boticario.common.pagination.PageResponse;
 import com.boticario.modules.catalog.domain.Product;
 import com.boticario.modules.catalog.infrastructure.ProductRepository;
+import com.boticario.modules.inventory.api.dto.InventoryValuationDTO;
 import com.boticario.modules.inventory.api.dto.LotDTO;
 import com.boticario.modules.inventory.api.dto.MovementDTO;
 import com.boticario.modules.inventory.api.dto.StockDTO;
@@ -106,6 +107,40 @@ public class InventoryQueryService {
                 .filter(lot -> lot.getExpirationDate().isAfter(today))
                 .map(lot -> LotDTO.from(lot, today, cutoff))
                 .toList();
+    }
+
+    /**
+     * Valor total de lo que hay fisicamente en inventario en este momento,
+     * calculado al vuelo (no persiste nada, no requiere migracion de datos
+     * existentes). Dos totales porque "valor de inventario" admite dos
+     * lecturas validas: a costo (lo que costo comprarlo -- el sentido
+     * contable, pero depende de que purchase_price este cargado) y a
+     * precio de venta (lo que se recibiria si se vendiera todo, siempre
+     * completo porque sale_price es obligatorio).
+     */
+    @Transactional(readOnly = true)
+    public InventoryValuationDTO getValuation() {
+        List<Object[]> rows = stockRepository.findValuationRows();
+
+        BigDecimal valueAtCost = BigDecimal.ZERO;
+        BigDecimal valueAtSalePrice = BigDecimal.ZERO;
+        int withoutCost = 0;
+
+        for (Object[] row : rows) {
+            BigDecimal quantityBase = (BigDecimal) row[0];
+            BigDecimal purchasePrice = (BigDecimal) row[1];
+            BigDecimal salePrice = (BigDecimal) row[2];
+
+            valueAtSalePrice = valueAtSalePrice.add(quantityBase.multiply(salePrice));
+
+            if (purchasePrice != null) {
+                valueAtCost = valueAtCost.add(quantityBase.multiply(purchasePrice));
+            } else {
+                withoutCost++;
+            }
+        }
+
+        return new InventoryValuationDTO(valueAtCost, valueAtSalePrice, withoutCost, rows.size());
     }
 
     private int alertDays() {

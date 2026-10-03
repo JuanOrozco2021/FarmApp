@@ -39,7 +39,8 @@ export class SettingsComponent implements OnInit {
     pharmacyName: ['', Validators.required],
     nit: [''],
     address: [''],
-    expirationAlertDays: this.fb.nonNullable.control<number>(30, [Validators.required, Validators.min(1)])
+    expirationAlertDays: this.fb.nonNullable.control<number>(30, [Validators.required, Validators.min(1)]),
+    ticketPrinterName: ['']
   });
 
   loading = signal(true);
@@ -58,7 +59,8 @@ export class SettingsComponent implements OnInit {
           pharmacyName: settings.pharmacyName,
           nit: settings.nit || '',
           address: settings.address || '',
-          expirationAlertDays: settings.expirationAlertDays
+          expirationAlertDays: settings.expirationAlertDays,
+          ticketPrinterName: settings.ticketPrinterName || ''
         });
         this.loading.set(false);
         if (!this.canManage) {
@@ -86,7 +88,8 @@ export class SettingsComponent implements OnInit {
       pharmacyName: raw.pharmacyName,
       nit: raw.nit || null,
       address: raw.address || null,
-      expirationAlertDays: raw.expirationAlertDays
+      expirationAlertDays: raw.expirationAlertDays,
+      ticketPrinterName: raw.ticketPrinterName || null
     }).subscribe({
       next: () => {
         this.saving.set(false);

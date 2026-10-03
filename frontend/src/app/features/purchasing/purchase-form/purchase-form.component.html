@@ -16,7 +16,7 @@
     </div>
     <div class="form-field">
       <label for="date">Fecha de compra</label>
-      <p-calendar inputId="date" [(ngModel)]="purchaseDate" dateFormat="yy-mm-dd" [showIcon]="true" />
+      <p-calendar inputId="date" [(ngModel)]="purchaseDate" dateFormat="yy-mm-dd" [showIcon]="true" appendTo="body" />
     </div>
     <div class="form-field">
       <label for="notes">Notas (opcional)</label>
@@ -60,7 +60,7 @@
     </div>
     <div class="form-field">
       <label for="exp">Fecha de vencimiento (si el producto la controla)</label>
-      <p-calendar inputId="exp" [(ngModel)]="draftExpirationDate" dateFormat="yy-mm-dd" [showIcon]="true" />
+      <p-calendar inputId="exp" [(ngModel)]="draftExpirationDate" dateFormat="yy-mm-dd" [showIcon]="true" appendTo="body" />
     </div>
   </div>
 

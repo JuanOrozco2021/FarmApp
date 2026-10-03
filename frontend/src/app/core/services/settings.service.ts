@@ -9,6 +9,7 @@ export interface BusinessSettings {
   nit: string | null;
   address: string | null;
   expirationAlertDays: number;
+  ticketPrinterName: string | null;
 }
 
 export interface UpdateBusinessSettingsPayload {
@@ -16,6 +17,7 @@ export interface UpdateBusinessSettingsPayload {
   nit: string | null;
   address: string | null;
   expirationAlertDays: number;
+  ticketPrinterName: string | null;
 }
 
 /**

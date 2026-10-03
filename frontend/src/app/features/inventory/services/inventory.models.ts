@@ -65,3 +65,10 @@ export interface AdjustmentInfo {
   movementId: number;
   createdAt: string;
 }
+
+export interface InventoryValuation {
+  valueAtCost: number;
+  valueAtSalePrice: number;
+  productsWithoutCost: number;
+  productsWithStock: number;
+}

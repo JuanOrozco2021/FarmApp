@@ -6,6 +6,11 @@ html, body {
   background: #f4f7f5;
 }
 
+app-root, app-shell {
+  display: block;
+  height: 100%;
+}
+
 /* Utilidades compartidas por las pantallas de features/ */
 .page-header {
   display: flex;

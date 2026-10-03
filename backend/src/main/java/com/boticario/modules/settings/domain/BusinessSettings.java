@@ -27,6 +27,9 @@ public class BusinessSettings {
     @Column(length = 255)
     private String address;
 
+    @Column(name = "ticket_printer_name", length = 100)
+    private String ticketPrinterName;
+
     @Column(name = "expiration_alert_days", nullable = false)
     private Integer expirationAlertDays;
 

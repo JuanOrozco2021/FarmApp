@@ -79,7 +79,7 @@
     </ng-template>
   </p-table>
 
-  <app-sale-ticket [sale]="s"></app-sale-ticket>
+  <app-sale-ticket #ticket [sale]="s"></app-sale-ticket>
 </ng-container>
 
 <p-dialog header="Anular venta" [(visible)]="showCancelDialog" [modal]="true" [style]="{ width: '26rem' }">

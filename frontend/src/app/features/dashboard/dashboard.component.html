@@ -13,7 +13,7 @@
 
   <p-calendar *ngIf="selectedRange === 'PERSONALIZADO'" [(ngModel)]="customDates" selectionMode="range"
               dateFormat="yy-mm-dd" [showIcon]="true" placeholder="Selecciona un rango"
-              (onSelect)="onCustomDatesChange()"></p-calendar>
+              appendTo="body" (onSelect)="onCustomDatesChange()"></p-calendar>
 </div>
 
 <div class="dashboard-cards">
@@ -35,6 +35,22 @@
   <p-card header="Descuentos">
     <div class="dashboard-stat">${{ salesSummary?.totalDiscount ?? 0 }}</div>
     <span class="muted">total aplicado en el periodo</span>
+  </p-card>
+</div>
+
+<div class="dashboard-cards" style="margin-top: 1rem">
+  <p-card header="Valor de inventario (a costo)">
+    <div class="dashboard-stat">${{ inventoryValuation?.valueAtCost ?? 0 | number: '1.0-0' }}</div>
+    <span class="muted">lo que costo comprar lo que hay en existencias</span>
+    <div *ngIf="inventoryValuation && inventoryValuation.productsWithoutCost > 0" class="hint" style="margin-top: 0.35rem; color: #b45309;">
+      {{ inventoryValuation.productsWithoutCost }} de {{ inventoryValuation.productsWithStock }} productos con stock
+      no tienen costo de compra registrado y no se incluyen en este total.
+    </div>
+  </p-card>
+
+  <p-card header="Valor de inventario (a precio de venta)">
+    <div class="dashboard-stat">${{ inventoryValuation?.valueAtSalePrice ?? 0 | number: '1.0-0' }}</div>
+    <span class="muted">lo que se recibiria si se vendiera todo el stock actual</span>
   </p-card>
 </div>
 

@@ -35,6 +35,16 @@
           <p-inputNumber inputId="expirationAlertDays" formControlName="expirationAlertDays" [min]="1" />
           <span class="hint">Con cuantos dias de anticipacion avisar antes de que un lote venza.</span>
         </div>
+
+        <div class="form-field">
+          <label for="ticketPrinterName">Nombre de la impresora de tickets</label>
+          <input id="ticketPrinterName" pInputText formControlName="ticketPrinterName" placeholder="Ej. Gprinter 58(48) x 210 mm" />
+          <span class="hint">
+            Nombre exacto tal como aparece en Windows (Configuracion &gt; Impresoras y escaneres).
+            Requiere tener QZ Tray instalado y corriendo en este equipo. Si se deja vacio, el ticket
+            se imprime con el dialogo normal del navegador.
+          </span>
+        </div>
       </div>
 
       <div class="form-actions" *ngIf="canManage">

@@ -3,6 +3,7 @@ package com.boticario.modules.inventory.api;
 import com.boticario.common.pagination.PageResponse;
 import com.boticario.modules.inventory.api.dto.AdjustmentDTO;
 import com.boticario.modules.inventory.api.dto.CreateAdjustmentRequest;
+import com.boticario.modules.inventory.api.dto.InventoryValuationDTO;
 import com.boticario.modules.inventory.api.dto.LotDTO;
 import com.boticario.modules.inventory.api.dto.MovementDTO;
 import com.boticario.modules.inventory.api.dto.StockDTO;
@@ -47,6 +48,11 @@ public class InventoryController {
     @GetMapping("/products/{productId}/kardex")
     public PageResponse<MovementDTO> getKardex(@PathVariable Long productId, Pageable pageable) {
         return queryService.getKardex(productId, pageable);
+    }
+
+    @GetMapping("/valuation")
+    public InventoryValuationDTO getValuation() {
+        return queryService.getValuation();
     }
 
     @GetMapping("/alerts/low-stock")

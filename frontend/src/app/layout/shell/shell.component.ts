@@ -32,6 +32,7 @@ export class ShellComponent {
   private readonly accountService = inject(AccountService);
 
   showPasswordDialog = false;
+  sidebarOpen = false;
   saving = signal(false);
   errorMessage = signal<string | null>(null);
   successMessage = signal<string | null>(null);
@@ -47,6 +48,14 @@ export class ShellComponent {
 
   logout(): void {
     this.authService.logout();
+  }
+
+  toggleSidebar(): void {
+    this.sidebarOpen = !this.sidebarOpen;
+  }
+
+  closeSidebar(): void {
+    this.sidebarOpen = false;
   }
 
   openPasswordDialog(): void {

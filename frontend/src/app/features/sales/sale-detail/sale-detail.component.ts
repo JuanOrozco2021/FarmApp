@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, ViewChild, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -97,7 +97,9 @@ export class SaleDetailComponent implements OnInit {
     this.router.navigateByUrl('/ventas');
   }
 
+  @ViewChild('ticket') ticketComponent?: SaleTicketComponent;
+
   print(): void {
-    window.print();
+    this.ticketComponent?.imprimir();
   }
 }

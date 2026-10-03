@@ -31,6 +31,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -148,11 +150,31 @@ public class PurchaseService {
 
             item.setMovementId(allocation.movementId());
 
-            // Costo de compra vigente de la presentacion = el de la ultima
-            // compra recibida (no lleva historial propio: eso es el rol de
-            // purchase_items, que ya queda auditado con fecha y proveedor).
+            // Costo de compra vigente de la presentacion comprada = el de la
+            // ultima compra recibida (no lleva historial propio: eso es el rol
+            // de purchase_items, que ya queda auditado con fecha y proveedor).
             presentation.setPurchasePrice(item.getUnitCost());
             presentationRepository.save(presentation);
+
+            // El valor total de inventario (Dashboard) lee el costo desde la
+            // presentacion BASE de cada producto, porque es la unica cuyo
+            // precio ya esta expresado por unidad base sin depender de ningun
+            // factor de conversion. Si lo que se compro fue otra presentacion
+            // (ej. una caja), sin esto el costo nunca llegaria a la
+            // presentacion base de productos que siempre se compran
+            // empacados, y el valor de inventario los mostraria para siempre
+            // como "sin costo registrado" aunque si se este registrando.
+            if (!presentation.isBasePresentation()) {
+                BigDecimal costoPorUnidadBase = item.getUnitCost()
+                        .divide(presentation.getConversionFactor(), 2, RoundingMode.HALF_UP);
+                presentationRepository.findByProductIdAndActiveTrue(product.getId()).stream()
+                        .filter(ProductPresentation::isBasePresentation)
+                        .findFirst()
+                        .ifPresent(basePresentation -> {
+                            basePresentation.setPurchasePrice(costoPorUnidadBase);
+                            presentationRepository.save(basePresentation);
+                        });
+            }
         }
 
         purchase.setStatus(PurchaseStatus.RECIBIDA);

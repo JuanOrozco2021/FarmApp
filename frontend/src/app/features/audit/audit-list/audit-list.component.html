@@ -7,7 +7,7 @@
   <input pInputText type="text" placeholder="Accion (ej. SALE_CANCEL)..." [(ngModel)]="action" (ngModelChange)="onFilterChange()" />
   <input pInputText type="text" placeholder="Usuario..." [(ngModel)]="username" (ngModelChange)="onFilterChange()" />
   <p-calendar [(ngModel)]="dateRange" selectionMode="range" dateFormat="yy-mm-dd" [showIcon]="true"
-              placeholder="Rango de fechas" (onSelect)="onFilterChange()"></p-calendar>
+              placeholder="Rango de fechas" appendTo="body" (onSelect)="onFilterChange()"></p-calendar>
 </div>
 
 <p-table

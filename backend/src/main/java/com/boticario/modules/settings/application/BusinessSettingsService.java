@@ -35,6 +35,7 @@ public class BusinessSettingsService {
         settings.setNit(request.nit());
         settings.setAddress(request.address());
         settings.setExpirationAlertDays(request.expirationAlertDays());
+        settings.setTicketPrinterName(request.ticketPrinterName());
         settings.setUpdatedAt(Instant.now());
         settings.setUpdatedBy(currentUserProvider.currentUsername());
         return BusinessSettingsDTO.from(repository.save(settings));

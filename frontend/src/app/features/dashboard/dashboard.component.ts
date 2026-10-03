@@ -12,6 +12,8 @@ import { TagModule } from 'primeng/tag';
 import { AuthService } from '../../core/services/auth.service';
 import { ReportService } from './services/report.service';
 import { InventoryAlertsSummary, SalesSummary, TopProduct } from './services/report.models';
+import { InventoryService } from '../inventory/services/inventory.service';
+import { InventoryValuation } from '../inventory/services/inventory.models';
 
 type RangeOption = 'HOY' | 'SEMANA' | 'MES' | 'PERSONALIZADO';
 
@@ -43,16 +45,24 @@ export class DashboardComponent implements OnInit {
   salesSummary: SalesSummary | null = null;
   topProducts: TopProduct[] = [];
   inventoryAlerts: InventoryAlertsSummary | null = null;
+  inventoryValuation: InventoryValuation | null = null;
 
   constructor(
     protected readonly authService: AuthService,
     private readonly reportService: ReportService,
+    private readonly inventoryService: InventoryService,
     private readonly router: Router
   ) {
   }
 
   ngOnInit(): void {
     this.reload();
+    // El valor de inventario es una foto del momento, no depende del
+    // rango de fechas seleccionado -- se carga una sola vez.
+    this.inventoryService.getValuation().subscribe({
+      next: (valuation) => (this.inventoryValuation = valuation),
+      error: () => (this.inventoryValuation = null)
+    });
   }
 
   onRangeChange(): void {

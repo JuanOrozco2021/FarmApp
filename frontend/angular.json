@@ -23,7 +23,7 @@
               "node_modules/primeflex/primeflex.css",
               "src/styles.scss"
             ],
-            "scripts": []
+            "scripts": ["node_modules/qz-tray/qz-tray.js"]
           },
           "configurations": {
             "production": {
@@ -62,7 +62,7 @@
               "node_modules/primeicons/primeicons.css",
               "src/styles.scss"
             ],
-            "scripts": []
+            "scripts": ["node_modules/qz-tray/qz-tray.js"]
           }
         }
       }

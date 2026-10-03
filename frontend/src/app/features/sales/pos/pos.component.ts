@@ -63,6 +63,7 @@ const PAYMENT_METHOD_OPTIONS: { label: string; value: PaymentMethod }[] = [
 export class PosComponent implements OnInit {
 
   @ViewChild('barcodeInput') barcodeInputRef?: ElementRef<HTMLInputElement>;
+  @ViewChild('ticket') ticketComponent?: SaleTicketComponent;
 
   barcodeCode = '';
   scanError = '';
@@ -312,7 +313,7 @@ export class PosComponent implements OnInit {
   }
 
   print(): void {
-    window.print();
+    this.ticketComponent?.imprimir();
   }
 
   private resetCart(): void {

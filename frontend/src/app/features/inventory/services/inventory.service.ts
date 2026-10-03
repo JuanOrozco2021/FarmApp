@@ -6,6 +6,7 @@ import { environment } from '../../../../environments/environment';
 import {
   AdjustmentInfo,
   CreateAdjustmentPayload,
+  InventoryValuation,
   LotInfo,
   MovementInfo,
   PageResponse,
@@ -32,6 +33,10 @@ export class InventoryService {
     return this.http.get<PageResponse<MovementInfo>>(`${this.baseUrl}/products/${productId}/kardex`, {
       params: { page, size, sort: 'occurredAt,desc' }
     });
+  }
+
+  getValuation(): Observable<InventoryValuation> {
+    return this.http.get<InventoryValuation>(`${this.baseUrl}/valuation`);
   }
 
   lowStockAlerts(): Observable<StockInfo[]> {

@@ -24,4 +24,19 @@ public interface InventoryStockRepository extends JpaRepository<InventoryStock, 
 
     @Query("select s from InventoryStock s where s.quantityBase <= s.product.minStockBase and s.product.status = 'ACTIVE'")
     List<InventoryStock> findLowStock();
+
+    /**
+     * Una fila por producto con stock fisico (> 0): su cantidad en unidad
+     * base, y el costo/precio de venta de su presentacion base (la unica
+     * presentacion cuyo precio ya esta expresado por unidad base, sin
+     * necesidad de dividir por ningun factor de conversion). purchase_price
+     * puede venir null -- se maneja en el service, no aqui.
+     */
+    @Query("""
+            select s.quantityBase, pp.purchasePrice, pp.salePrice
+            from InventoryStock s
+            join ProductPresentation pp on pp.product.id = s.productId
+            where pp.basePresentation = true and pp.active = true and s.quantityBase > 0
+            """)
+    List<Object[]> findValuationRows();
 }

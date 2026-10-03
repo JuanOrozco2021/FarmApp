@@ -7,6 +7,7 @@ public record UpdateBusinessSettingsRequest(
         @NotBlank String pharmacyName,
         String nit,
         String address,
-        @Min(value = 1, message = "los dias de alerta deben ser al menos 1") Integer expirationAlertDays
+        @Min(value = 1, message = "los dias de alerta deben ser al menos 1") Integer expirationAlertDays,
+        String ticketPrinterName
 ) {
 }
